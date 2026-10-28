@@ -293,6 +293,8 @@ public final class DictationPipeline {
             do {
                 let formatter = try formatters.makeFormatter(for: provider)
                 formatted = try await formatter.format(FormatRequest(transcript: raw, mode: mode))
+                // Gemini may answer in Simplified even when asked for Taiwan usage.
+                if provider.kind == .gemini { formatted = ChineseConverter.shared.toTraditionalTaiwan(formatted) }
             } catch is CancellationError {
                 throw DictationError.cancelled
             } catch {

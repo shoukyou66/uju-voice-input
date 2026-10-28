@@ -31,7 +31,7 @@ struct ModesView: View {
                         perform { for id in ids { try model.modes.delete(id: id) } }
                     }
                 } footer: {
-                    Text("模式會把你說的話整理成完成的格式。向右滑可啟用某個模式；內建模式可以編輯與重設。")
+                    Text("鍵盤上會顯示前三個，就是你的三個個性。點進去可以改名字和提詞；「Smart」只用 Gemini Smart 整理，其他個性會再照提詞改寫一次。按住右側可以拖曳換順序。")
                 }
 
                 Section {
@@ -44,14 +44,6 @@ struct ModesView: View {
             .navigationDestination(for: UUID.self) { id in
                 if let mode = model.modes.mode(id: id) {
                     ModeEditorView(mode: mode, isNew: false)
-                }
-            }
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) { EditButton() }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("新增模式", systemImage: "plus") {
-                        newMode = Mode(name: "", icon: "text.bubble", instructions: "")
-                    }
                 }
             }
             .sheet(item: $newMode) { mode in

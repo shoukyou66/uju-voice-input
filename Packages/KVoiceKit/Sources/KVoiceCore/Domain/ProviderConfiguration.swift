@@ -128,6 +128,8 @@ public struct ProviderConfiguration: Codable, Sendable, Hashable {
     public var resolvedBaseURL: URL? { baseURL ?? kind.defaultBaseURL }
 
     public static let appleIntelligence = ProviderConfiguration(kind: .appleIntelligence)
+    /// Google AI Studio's latest Flash, which the personalities rewrite with.
+    public static let geminiFormatting = ProviderConfiguration(kind: .gemini, model: "gemini-flash-latest")
 }
 
 /// A transcription engine choice.

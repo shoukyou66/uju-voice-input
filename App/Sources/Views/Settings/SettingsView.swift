@@ -12,7 +12,21 @@ struct SettingsView: View {
         @Bindable var settings = model.settings
         NavigationStack {
             Form {
-                Section("語音與 AI") {
+                Section {
+                    APIKeyField(provider: .gemini)
+                    NavigationLink {
+                        VocabularyView()
+                    } label: {
+                        SettingsRow(title: "自訂字典", detail: "\(VocabularyView.unique(settings.settings.vocabulary ?? []).count) 個詞",
+                                    icon: "character.book.closed", color: .green)
+                    }
+                } header: {
+                    Text("我的設定")
+                } footer: {
+                    Text("Gemini API 金鑰在 Google AI Studio（aistudio.google.com/apikey）取得，只存在這支手機裡。三個個性在下方「模式」分頁修改。")
+                }
+
+                Section("進階：語音與 AI") {
                     NavigationLink {
                         TranscriptionSettingsView()
                     } label: {
@@ -258,21 +272,6 @@ struct TranscriptionSettingsView: View {
                 }
             }
 
-            if engine.kind == .cloud, engine.cloud?.provider == .gemini {
-                Section {
-                    TextEditor(text: Binding(
-                        get: { (settings.settings.vocabulary ?? []).joined(separator: "\n") },
-                        set: { settings.settings.vocabulary = $0.components(separatedBy: .newlines) }
-                    ))
-                    .frame(minHeight: 160)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-                } header: {
-                    Text("自訂字典")
-                } footer: {
-                    Text("一行一個詞，例如人名、軟體名稱、專業用語。模型名稱含 transcribe 時（gemini-3.5-transcribe）會用 Smart 模式整理，並轉成台灣繁體。")
-                }
-            }
         }
         .navigationTitle("轉錄")
         .navigationBarTitleDisplayMode(.inline)

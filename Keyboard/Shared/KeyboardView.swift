@@ -2,9 +2,10 @@ import KVoiceCore
 import SwiftUI
 import UIKit
 
-/// The KVoice keyboard: a large mic button with its status, mode chips
-/// under it, and a row of basic editing keys. The chips stay off the top
-/// edge, which the host app's own bars can draw over.
+/// The KVoice keyboard: a large mic button with its status, the first three
+/// modes ("personalities") as one segmented capsule under it, and a row of
+/// basic editing keys. Nothing sits on the top edge, which the host app's
+/// own bars can draw over.
 struct KeyboardView: View {
     let model: KeyboardModel
 
@@ -13,9 +14,10 @@ struct KeyboardView: View {
             if model.hasFullAccess {
                 Spacer(minLength: 12)
                 KeyboardDictationPanel(model: model)
-                Spacer(minLength: 4)
-                KeyboardModeBar(model: model)
-                    .padding(.bottom, 6)
+                Spacer(minLength: 6)
+                KeyboardPersonaPicker(model: model)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 8)
             } else {
                 KeyboardFullAccessExplainer()
                     .padding(.top, 10)
@@ -31,41 +33,38 @@ struct KeyboardView: View {
 
 // MARK: - Modes
 
-private struct KeyboardModeBar: View {
+private struct KeyboardPersonaPicker: View {
     let model: KeyboardModel
 
     var body: some View {
-        ScrollViewReader { proxy in
-            ScrollView(.horizontal) {
-                HStack(spacing: 6) {
-                    ForEach(model.modes) { mode in
-                        chip(mode).id(mode.id)
-                    }
-                }
-                .padding(.horizontal, 10)
+        HStack(spacing: 2) {
+            ForEach(model.modes.prefix(3)) { mode in
+                segment(mode)
             }
-            .scrollIndicators(.hidden)
-            .onAppear { if let id = model.activeModeID { proxy.scrollTo(id, anchor: .center) } }
         }
-        .frame(height: 34)
+        .padding(3)
+        .background(KeyboardColors.functionKey, in: .capsule)
+        .frame(maxWidth: 360)
         .disabled(model.phase.isActive)
         .opacity(model.phase.isActive ? 0.5 : 1)
     }
 
-    private func chip(_ mode: Mode) -> some View {
+    private func segment(_ mode: Mode) -> some View {
         let isActive = mode.id == model.activeModeID
         return Button {
             model.selectMode(mode.id)
         } label: {
-            Label(mode.name, systemImage: mode.icon)
+            Text(mode.name)
                 .font(.footnote.weight(isActive ? .semibold : .regular))
                 .lineLimit(1)
-                .padding(.horizontal, 12)
-                .frame(height: 30)
+                .minimumScaleFactor(0.8)
+                .frame(maxWidth: .infinity, minHeight: 30)
                 .foregroundStyle(isActive ? Color.white : Color.primary)
-                .background(isActive ? Color.accentColor : KeyboardColors.functionKey, in: .capsule)
+                .background(isActive ? Color.accentColor : Color.clear, in: .capsule)
+                .contentShape(.capsule)
         }
         .buttonStyle(.plain)
+        .animation(.snappy(duration: 0.2), value: isActive)
         .accessibilityLabel("\(mode.name) 模式")
         .accessibilityAddTraits(isActive ? .isSelected : [])
     }
@@ -105,22 +104,6 @@ private struct KeyboardDictationPanel: View {
             }
             .padding(.horizontal, 12)
             KeyboardStatusLine(phase: model.phase, external: model.dictation.external, modeName: model.activeMode?.name)
-            if model.showsActionButtonTip {
-                HStack(spacing: 4) {
-                    Text("小提醒：按動作按鈕即可不離開這個 App 直接聽寫")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.8)
-                    Button(action: model.dismissTip) {
-                        Image(systemName: "xmark").font(.system(size: 9, weight: .semibold)).foregroundStyle(.secondary)
-                            .frame(width: 24, height: 24)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("關閉提醒")
-                }
-                .padding(.horizontal, 16)
-            }
         }
     }
 
@@ -173,14 +156,17 @@ private struct KeyboardMicButton: View {
                     ProgressView()
                         .tint(.white)
                         .controlSize(.large)
+                } else if isRecording {
+                    // The keyboard cannot hear the microphone, so the bars
+                    // show that recording runs rather than the actual level.
+                    KeyboardRecordingBars()
                 } else {
-                    Image(systemName: isRecording ? "stop.fill" : "mic.fill")
-                        .font(.system(size: isRecording ? 28 : 32, weight: .semibold))
+                    Image(systemName: "mic.fill")
+                        .font(.system(size: 36, weight: .semibold))
                         .foregroundStyle(.white)
-                        .contentTransition(.symbolEffect(.replace))
                 }
             }
-            .frame(width: 78, height: 78)
+            .frame(width: 92, height: 92)
             .contentShape(Circle())
         }
         .buttonStyle(KeyboardPressStyle())
@@ -204,6 +190,26 @@ private struct KeyboardMicButton: View {
         if isRecording { return .red }
         if isProcessing || isBlocked { return Color(uiColor: .systemGray) }
         return .accentColor
+    }
+}
+
+private struct KeyboardRecordingBars: View {
+    private let phases: [Double] = [0, 1.3, 0.6, 2.1, 0.9]
+
+    var body: some View {
+        TimelineView(.animation) { context in
+            let time = context.date.timeIntervalSinceReferenceDate
+            HStack(spacing: 4) {
+                ForEach(phases.indices, id: \.self) { index in
+                    let level = 0.35 + 0.65 * abs(sin(time * 3.2 + phases[index]))
+                    Capsule()
+                        .fill(.white)
+                        .frame(width: 5, height: 34 * level)
+                }
+            }
+            .frame(height: 36)
+        }
+        .accessibilityHidden(true)
     }
 }
 

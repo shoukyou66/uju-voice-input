@@ -79,8 +79,8 @@ extension Mode {
 
     public static let dictation = Mode(
         id: BuiltInID.dictation,
-        name: "聽寫",
-        icon: "mic",
+        name: "Smart",
+        icon: "sparkles",
         instructions: "",
         kind: .plainDictation,
         isBuiltIn: true
@@ -104,14 +104,12 @@ extension Mode {
 
     public static let message = Mode(
         id: BuiltInID.message,
-        name: "訊息",
+        name: "口語聊天",
         icon: "message",
         instructions: """
-        Turn the dictated text into a short, natural chat message. Clean up filler \
-        words and false starts, fix punctuation, and keep a casual, friendly tone \
-        that matches the speaker. Keep it brief; no greeting or sign-off unless the \
-        speaker said one. No Markdown.
+        把這段聽寫改成自然的聊天訊息：保留原意和說話者的語氣，輕鬆親切，句子短一點，        可以分成幾句。說話者沒說的問候語或署名不要加，不要用 Markdown，        不要回答、延伸或補充內容。用台灣繁體中文和台灣用語；英文專有名詞保持原樣。
         """,
+        providerOverride: .geminiFormatting,
         isBuiltIn: true
     )
 
@@ -144,14 +142,12 @@ extension Mode {
 
     public static let summary = Mode(
         id: BuiltInID.summary,
-        name: "摘要",
-        icon: "text.append",
+        name: "專注摘要",
+        icon: "list.bullet",
         instructions: """
-        Summarize the dictated text in a few clear sentences that keep the key \
-        points, decisions, names, numbers and action items. Write plain prose, \
-        shorter than the original. Do not add opinions or information that was \
-        not said.
+        把這段聽寫整理成重點：用「- 」條列，每條一個重點，照說話的順序；        人名、數字、日期和待辦事項完整保留，刪掉重複和贅詞，        不加入沒說過的內容或意見。用台灣繁體中文和台灣用語；英文專有名詞保持原樣。
         """,
+        providerOverride: .geminiFormatting,
         isBuiltIn: true
     )
 
@@ -169,8 +165,7 @@ extension Mode {
         isBuiltIn: true
     )
 
-    /// The modes KVoice ships with, in display order.
-    public static let builtIns: [Mode] = [
-        .dictation, .cleanUp, .message, .email, .notes, .summary, .translateToEnglish
-    ]
+    /// The three personalities shown on the keyboard, in display order. The
+    /// other modes above stay defined for reference but are not offered.
+    public static let builtIns: [Mode] = [.dictation, .message, .summary]
 }
