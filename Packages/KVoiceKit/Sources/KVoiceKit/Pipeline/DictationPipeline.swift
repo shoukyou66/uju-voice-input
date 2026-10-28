@@ -266,7 +266,8 @@ public final class DictationPipeline {
             transcription = try await engine.transcribe(TranscriptionRequest(
                 audioURL: recording.url,
                 language: mode.language,
-                translateToEnglish: mode.translateToEnglish
+                translateToEnglish: mode.translateToEnglish,
+                vocabulary: settings.vocabulary ?? []
             ))
         } catch {
             if case .noSpeech = DictationError(error) { discardAudio(recording.url) }

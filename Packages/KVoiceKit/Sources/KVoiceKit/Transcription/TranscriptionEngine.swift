@@ -7,11 +7,14 @@ public struct TranscriptionRequest: Sendable, Hashable {
     public var language: String?
     /// Translate to English while transcribing, where the engine can.
     public var translateToEnglish: Bool
+    /// Terms to recognize (names, jargon), for engines that take them.
+    public var vocabulary: [String]
 
-    public init(audioURL: URL, language: String? = nil, translateToEnglish: Bool = false) {
+    public init(audioURL: URL, language: String? = nil, translateToEnglish: Bool = false, vocabulary: [String] = []) {
         self.audioURL = audioURL
         self.language = language
         self.translateToEnglish = translateToEnglish
+        self.vocabulary = vocabulary
     }
 
     /// The ISO 639 language code ("en" for "en-US"), which Whisper and the

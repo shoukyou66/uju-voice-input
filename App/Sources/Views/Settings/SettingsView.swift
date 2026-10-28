@@ -257,6 +257,22 @@ struct TranscriptionSettingsView: View {
                     Text("Audio is sent to the provider you choose with your key: OpenAI, Groq, Google AI Studio, Google Vertex AI, or any OpenAI-compatible /audio/transcriptions endpoint. Google providers accept recordings up to about \(GeminiTranscriptionEngine.maxAudioMinutes) minutes.")
                 }
             }
+
+            if engine.kind == .cloud, engine.cloud?.provider == .gemini {
+                Section {
+                    TextEditor(text: Binding(
+                        get: { (settings.settings.vocabulary ?? []).joined(separator: "\n") },
+                        set: { settings.settings.vocabulary = $0.components(separatedBy: .newlines) }
+                    ))
+                    .frame(minHeight: 160)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                } header: {
+                    Text("自訂字典")
+                } footer: {
+                    Text("一行一個詞，例如人名、軟體名稱、專業用語。模型名稱含 transcribe 時（gemini-3.5-transcribe）會用 Smart 模式整理，並轉成台灣繁體。")
+                }
+            }
         }
         .navigationTitle("Transcription")
         .navigationBarTitleDisplayMode(.inline)
@@ -280,7 +296,7 @@ struct TranscriptionSettingsView: View {
             settings.settings.defaultEngine = .whisper((installed ?? .base).id)
         case .cloud:
             settings.settings.defaultEngine = .cloud(
-                settings.settings.defaultEngine.cloud ?? CloudTranscriptionConfiguration(provider: .openAI)
+                settings.settings.defaultEngine.cloud ?? CloudTranscriptionConfiguration(provider: .gemini)
             )
         }
     }

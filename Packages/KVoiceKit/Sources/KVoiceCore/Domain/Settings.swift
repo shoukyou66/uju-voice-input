@@ -37,17 +37,22 @@ public struct Settings: Codable, Sendable, Hashable {
     /// forth keeps what the user typed.
     public var providerConfigurations: [ProviderKind: ProviderConfiguration]
     public var retention: RetentionPolicy
+    /// Custom vocabulary for engines that take one (Gemini smart
+    /// transcription). Optional so settings saved before it still decode.
+    public var vocabulary: [String]?
 
     public init(
         defaultEngine: TranscriptionEngineSelection = .appleSpeech,
         defaultProvider: ProviderConfiguration = .appleIntelligence,
         providerConfigurations: [ProviderKind: ProviderConfiguration] = [:],
-        retention: RetentionPolicy = RetentionPolicy()
+        retention: RetentionPolicy = RetentionPolicy(),
+        vocabulary: [String]? = nil
     ) {
         self.defaultEngine = defaultEngine
         self.defaultProvider = defaultProvider
         self.providerConfigurations = providerConfigurations
         self.retention = retention
+        self.vocabulary = vocabulary
     }
 
     /// The stored configuration for a provider, or its defaults.

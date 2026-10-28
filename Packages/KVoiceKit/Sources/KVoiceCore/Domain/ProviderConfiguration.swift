@@ -103,7 +103,8 @@ public enum ProviderKind: String, Codable, Sendable, Hashable, CaseIterable, Ide
         case .openAI: "gpt-4o-transcribe"
         case .groq: "whisper-large-v3-turbo"
         case .customOpenAICompatible: "whisper-1"
-        case .gemini, .vertexAI: "gemini-2.5-flash"
+        case .gemini: "gemini-3.5-transcribe"
+        case .vertexAI: "gemini-2.5-flash"
         default: nil
         }
     }

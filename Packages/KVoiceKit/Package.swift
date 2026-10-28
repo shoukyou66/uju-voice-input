@@ -24,7 +24,9 @@ let package = Package(
             dependencies: [
                 "KVoiceCore",
                 .product(name: "WhisperKit", package: "argmax-oss-swift")
-            ]
+            ],
+            // OpenCC Simplified-to-Traditional dictionaries (Apache 2.0).
+            resources: [.copy("Resources/OpenCC")]
         ),
         .testTarget(name: "KVoiceKitTests", dependencies: ["KVoiceKit", "KVoiceCore"])
     ],

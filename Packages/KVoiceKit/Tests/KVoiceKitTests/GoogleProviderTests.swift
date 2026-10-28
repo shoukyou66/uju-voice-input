@@ -18,9 +18,10 @@ private let geminiReply = """
             #expect(kind.supportsTranscription)
             #expect(kind.requiresAPIKey)
             #expect(kind.defaultModel == "gemini-2.5-flash")
-            #expect(kind.defaultTranscriptionModel == "gemini-2.5-flash")
-            #expect(CloudTranscriptionConfiguration(provider: kind).model == "gemini-2.5-flash")
         }
+        #expect(ProviderKind.gemini.defaultTranscriptionModel == "gemini-3.5-transcribe")
+        #expect(ProviderKind.vertexAI.defaultTranscriptionModel == "gemini-2.5-flash")
+        #expect(CloudTranscriptionConfiguration(provider: .vertexAI).model == "gemini-2.5-flash")
         #expect(ProviderKind.vertexAI.defaultBaseURL?.absoluteString == "https://aiplatform.googleapis.com/v1")
         #expect(ProviderKind.openAI.transcriptionAPI == .openAIAudioTranscriptions)
         #expect(ProviderKind.groq.transcriptionAPI == .openAIAudioTranscriptions)
@@ -163,7 +164,7 @@ private let geminiReply = """
 }
 
 @Suite struct GeminiTranscriptionTests {
-    func engine(_ kind: ProviderKind, _ transport: StubTransport, model: String? = nil, baseURL: URL? = nil) -> GeminiTranscriptionEngine {
+    func engine(_ kind: ProviderKind, _ transport: StubTransport, model: String? = "gemini-2.5-flash", baseURL: URL? = nil) -> GeminiTranscriptionEngine {
         GeminiTranscriptionEngine(
             configuration: CloudTranscriptionConfiguration(provider: kind, baseURL: baseURL, model: model),
             apiKey: "goog-key",
@@ -378,5 +379,38 @@ private let geminiReply = """
         #expect(reloaded.settings.defaultEngine.cloud?.provider == .vertexAI)
         #expect(reloaded.settings.defaultEngine.cloud?.model == "gemini-2.5-flash")
         #expect(reloaded.settings.configuration(for: .vertexAI).baseURL == base)
+    }
+}
+
+@Suite struct GeminiSmartTranscriptionTests {
+    @Test func buildsSmartRequestAndParsesReply() throws {
+        let engine = GeminiTranscriptionEngine(
+            configuration: CloudTranscriptionConfiguration(provider: .gemini),
+            apiKey: "goog-key",
+            transport: StubTransport(json: "{}")
+        )
+        #expect(engine.usesSmartTranscription)
+        let request = TranscriptionRequest(audioURL: URL(filePath: "/a.wav"), language: "zh-Hant", vocabulary: ["ComfyUI", " "])
+        let sent = try engine.makeSmartRequest(for: request, audio: Data([1, 2]))
+        #expect(sent.url?.absoluteString == "https://generativelanguage.googleapis.com/v1beta/interactions")
+        #expect(sent.value(forHTTPHeaderField: "x-goog-api-key") == "goog-key")
+        let body = try #require(sent.jsonBody)
+        #expect(body["model"] as? String == "gemini-3.5-transcribe")
+        let input = try #require((body["input"] as? [[String: String]])?.first)
+        #expect(input["type"] == "audio")
+        #expect(input["mime_type"] == "audio/wav")
+        let config = try #require((body["generation_config"] as? [String: Any])?["transcription_config"] as? [String: Any])
+        #expect(config["mode"] as? String == "smart")
+        #expect(config["language_codes"] as? [String] == ["cmn-Hans-CN", "en-US"])
+        #expect(config["custom_vocabulary"] as? [String] == ["ComfyUI"])
+
+        let reply = #"{"status":"completed","steps":[{"type":"model_output","content":[{"type":"text","text":" 这个参数 \n"}]}]}"#
+        #expect(try GeminiTranscriptionEngine.parseSmart(Data(reply.utf8)) == "这个参数")
+        #expect(GeminiTranscriptionEngine.smartLanguageCodes(for: "ja-JP") == ["ja-JP"])
+    }
+
+    @Test func convertsToTaiwanTraditional() {
+        #expect(ChineseConverter.shared.toTraditionalTaiwan("这个软件的网络设置里面有个打印机信息，参数 ComfyUI")
+            == "這個軟件的網絡設置裡面有個打印機信息，參數 ComfyUI")
     }
 }
