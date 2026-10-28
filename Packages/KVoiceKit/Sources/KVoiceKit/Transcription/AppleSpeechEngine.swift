@@ -54,7 +54,7 @@ public struct AppleSpeechEngine: TranscriptionEngine {
         progress: (@Sendable (Double) -> Void)? = nil
     ) async throws {
         guard isAvailable else {
-            throw TranscriptionError.engineUnavailable("On-device speech recognition is not available on this device.")
+            throw TranscriptionError.engineUnavailable("這部裝置無法使用裝置上的語音辨識。")
         }
         guard let locale = await resolvedLocale(for: language) else {
             throw TranscriptionError.unsupportedLanguage(language ?? Locale.current.identifier)
@@ -77,13 +77,13 @@ public struct AppleSpeechEngine: TranscriptionEngine {
         } catch is CancellationError {
             throw CancellationError()
         } catch {
-            throw TranscriptionError.engineUnavailable("The speech model could not be downloaded: \(error.localizedDescription)")
+            throw TranscriptionError.engineUnavailable("無法下載語音模型：\(error.localizedDescription)")
         }
     }
 
     public func transcribe(_ request: TranscriptionRequest) async throws -> TranscriptionResult {
         guard Self.isAvailable else {
-            throw TranscriptionError.engineUnavailable("On-device speech recognition is not available on this device.")
+            throw TranscriptionError.engineUnavailable("這部裝置無法使用裝置上的語音辨識。")
         }
         guard let locale = await Self.resolvedLocale(for: request.language) else {
             throw TranscriptionError.unsupportedLanguage(request.language ?? Locale.current.identifier)

@@ -13,9 +13,9 @@ enum AudioJobError: Error, LocalizedError, Equatable {
 
     var errorDescription: String? {
         switch self {
-        case .noSpeech: "No speech detected."
+        case .noSpeech: "沒有偵測到語音。"
         case .failed(let message): message
-        case .savedForLater: "Saved in KVoice History. Open KVoice to finish it."
+        case .savedForLater: "已儲存在 KVoice 歷史紀錄。請開啟 KVoice 完成轉錄。"
         }
     }
 }
@@ -44,7 +44,7 @@ extension AppModel {
         isForeground: Bool,
         continueInForeground: @MainActor () async throws -> Void
     ) async throws -> String {
-        guard let history else { throw AudioJobError.failed("KVoice History is unavailable, so the audio could not be saved.") }
+        guard let history else { throw AudioJobError.failed("無法使用 KVoice 歷史紀錄，所以音訊沒有儲存。") }
         // Provisional (no prompt), so the "dictation saved" notice can be
         // delivered even if the setup screen was never opened.
         JobNotifier.requestAuthorization()
@@ -62,8 +62,8 @@ extension AppModel {
         do {
             try data.write(to: original, options: AppGroup.fileWriteOptions)
         } catch {
-            finishJob(jobID, failure: "The audio could not be saved.")
-            throw AudioJobError.failed("The audio could not be saved: \(error.localizedDescription)")
+            finishJob(jobID, failure: "音訊無法儲存。")
+            throw AudioJobError.failed("音訊無法儲存：\(error.localizedDescription)")
         }
         let pending = HistoryRecord(
             id: jobID, duration: 0, modeID: mode.id, modeName: mode.name,
@@ -108,7 +108,7 @@ extension AppModel {
         continueInForeground: @MainActor () async throws -> Void
     ) async throws -> String {
         let jobID = pending.id
-        guard let history else { throw AudioJobError.failed("KVoice History is unavailable.") }
+        guard let history else { throw AudioJobError.failed("無法使用 KVoice 歷史紀錄。") }
         runningJobIDs.insert(jobID)
         defer { runningJobIDs.remove(jobID) }
         var mode = baseMode
@@ -117,9 +117,9 @@ extension AppModel {
 
         // 2. Convert to 16 kHz mono WAV (the source stays until it worked).
         guard let source = history.audioURL(for: record) else {
-            await markFailed(&record, message: "The audio file is missing.")
-            finishJob(jobID, failure: "The audio file is missing.")
-            throw AudioJobError.failed("The audio file is missing.")
+            await markFailed(&record, message: "找不到音訊檔案。")
+            finishJob(jobID, failure: "找不到音訊檔案。")
+            throw AudioJobError.failed("找不到音訊檔案。")
         }
         let recording: Recording
         if source.pathExtension.lowercased() == "wav" {
@@ -134,7 +134,7 @@ extension AppModel {
                 recording = try AudioFile.convertToProcessingWAV(from: source, to: wav)
             } catch {
                 try? FileManager.default.removeItem(at: wav)
-                let message = "The recording could not be read."
+                let message = "無法讀取這段錄音。"
                 await markFailed(&record, message: message)
                 finishJob(jobID, failure: message)
                 throw AudioJobError.failed(message)
@@ -250,8 +250,8 @@ enum JobNotifier {
 
     static func scheduleKilledNotice(jobID: UUID) {
         let content = UNMutableNotificationContent()
-        content.title = "Dictation saved"
-        content.body = "KVoice didn't have time to finish it. Open KVoice and it will be transcribed; it's in History."
+        content.title = "聽寫已儲存"
+        content.body = "KVoice 來不及完成。請開啟 KVoice，它會自動轉錄；內容已在歷史紀錄中。"
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: killedNoticeDelay, repeats: false)
         UNUserNotificationCenter.current().add(
             UNNotificationRequest(identifier: identifier(jobID), content: content, trigger: trigger)

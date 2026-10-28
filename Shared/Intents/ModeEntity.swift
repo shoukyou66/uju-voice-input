@@ -4,7 +4,7 @@ import KVoiceCore
 
 /// A KVoice mode as an App Intents entity (Shortcuts, Siri, widgets).
 struct ModeEntity: AppEntity, Identifiable {
-    static var typeDisplayRepresentation: TypeDisplayRepresentation { "Mode" }
+    static var typeDisplayRepresentation: TypeDisplayRepresentation { "模式" }
     static var defaultQuery: ModeQuery { ModeQuery() }
 
     let id: UUID

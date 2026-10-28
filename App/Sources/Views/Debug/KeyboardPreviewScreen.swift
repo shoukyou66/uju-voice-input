@@ -48,8 +48,8 @@ struct KeyboardPreviewScreen: View {
     var body: some View {
         VStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 8) {
-                Text("Keyboard preview").font(.headline)
-                Text(host.text.isEmpty ? "Text field" : host.text)
+                Text("鍵盤預覽").font(.headline)
+                Text(host.text.isEmpty ? "文字欄位" : host.text)
                     .foregroundStyle(host.text.isEmpty ? .secondary : .primary)
                     .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
                     .padding(10)

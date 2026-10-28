@@ -53,29 +53,29 @@ struct HandoffRecordingView: View {
 
     private var title: String {
         switch model.pipeline.phase {
-        case .recording: "Recording"
-        case .transcribing: "Transcribing…"
-        case .formatting: "Formatting…"
-        case .done: "Done"
-        case .failed: "Something went wrong"
-        case .idle: "Stopped"
+        case .recording: "錄音中"
+        case .transcribing: "轉錄中…"
+        case .formatting: "整理中…"
+        case .done: "完成"
+        case .failed: "發生錯誤"
+        case .idle: "已停止"
         }
     }
 
     private var subtitle: String {
         switch model.pipeline.phase {
-        case .recording: "Swipe back to your app and keep talking. Tap stop in the keyboard or here when you're done."
-        case .transcribing, .formatting: "The text will be typed into your app."
-        case .done: "Go back to your app: the KVoice keyboard types the text."
+        case .recording: "滑回你的 App 繼續說話。說完後，點鍵盤上或這裡的停止鈕。"
+        case .transcribing, .formatting: "文字會輸入到你的 App 裡。"
+        case .done: "回到你的 App：KVoice 鍵盤會自動輸入文字。"
         case .failed(let error): error.localizedDescription
-        case .idle: "Nothing was recorded."
+        case .idle: "沒有錄到任何聲音。"
         }
     }
 
     private var swipeBackHint: some View {
         HStack(spacing: 8) {
             Image(systemName: "arrow.uturn.backward")
-            Text("Swipe right along the bottom edge, or tap the back button at the top left")
+            Text("從螢幕底部邊緣往右滑，或點左上角的返回按鈕")
         }
         .font(.footnote)
         .foregroundStyle(.secondary)
@@ -98,15 +98,15 @@ struct HandoffRecordingView: View {
                 }
                 .buttonStyle(.plain)
                 .glassEffect(.regular.tint(.red).interactive(), in: .circle)
-                .accessibilityLabel("Stop dictation")
+                .accessibilityLabel("停止聽寫")
 
-                Button("Cancel", role: .cancel) { model.cancelDictation() }
+                Button("取消", role: .cancel) { model.cancelDictation() }
                     .buttonStyle(.glass)
             }
         } else if pipeline.isBusy {
             ProgressView().controlSize(.large)
         } else {
-            Button("Close") { model.handoff.isPresentingRecorder = false }
+            Button("關閉") { model.handoff.isPresentingRecorder = false }
                 .buttonStyle(.glassProminent)
                 .controlSize(.large)
         }

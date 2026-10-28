@@ -12,65 +12,65 @@ struct SettingsView: View {
         @Bindable var settings = model.settings
         NavigationStack {
             Form {
-                Section("Speech and AI") {
+                Section("語音與 AI") {
                     NavigationLink {
                         TranscriptionSettingsView()
                     } label: {
-                        SettingsRow(title: "Transcription", detail: settings.settings.defaultEngine.displayName,
+                        SettingsRow(title: "轉錄", detail: settings.settings.defaultEngine.displayName,
                                     icon: "waveform", color: .blue)
                     }
                     NavigationLink {
                         AIProviderSettingsView()
                     } label: {
-                        SettingsRow(title: "AI formatting", detail: settings.settings.defaultProvider.kind.displayName,
+                        SettingsRow(title: "AI 整理", detail: settings.settings.defaultProvider.kind.displayName,
                                     icon: "sparkles", color: .purple)
                     }
                 }
 
                 Section {
-                    Toggle("Copy results automatically", isOn: $autoCopy)
-                    Picker("Keep listening for the keyboard", selection: $keepAliveMinutes) {
+                    Toggle("自動拷貝結果", isOn: $autoCopy)
+                    Picker("讓鍵盤持續聆聽", selection: $keepAliveMinutes) {
                         ForEach(AppPreferences.keepAliveChoices, id: \.self) { minutes in
-                            Text(minutes == 0 ? "Off" : "\(minutes) min").tag(minutes)
+                            Text(minutes == 0 ? "關閉" : "\(minutes) 分鐘").tag(minutes)
                         }
                     }
                     .onChange(of: keepAliveMinutes) { _, minutes in
                         if minutes == 0 { model.handoff.endStandby() }
                     }
                 } header: {
-                    Text("Dictation")
+                    Text("聽寫")
                 } footer: {
-                    Text("After a dictation from the KVoice keyboard, KVoice keeps the microphone ready in the background for this long, so the keyboard can start the next dictation without switching apps. The microphone indicator stays on while it waits.")
+                    Text("從 KVoice 鍵盤聽寫後，KVoice 會在背景讓麥克風保持待命這麼久，讓鍵盤不用切換 App 就能開始下一次聽寫。等待期間，麥克風指示燈會一直亮著。")
                 }
 
                 Section {
-                    Picker("Keep history", selection: $settings.settings.retention.period) {
-                        Text("Forever").tag(RetentionPeriod.forever)
-                        Text("30 days").tag(RetentionPeriod.days30)
-                        Text("7 days").tag(RetentionPeriod.days7)
+                    Picker("保留歷史紀錄", selection: $settings.settings.retention.period) {
+                        Text("永久").tag(RetentionPeriod.forever)
+                        Text("30 天").tag(RetentionPeriod.days30)
+                        Text("7 天").tag(RetentionPeriod.days7)
                     }
-                    Toggle("Keep audio recordings", isOn: $settings.settings.retention.keepsAudio)
-                    Button("Delete All History", role: .destructive) { confirmingDeleteHistory = true }
+                    Toggle("保留錄音檔", isOn: $settings.settings.retention.keepsAudio)
+                    Button("刪除所有歷史紀錄", role: .destructive) { confirmingDeleteHistory = true }
                 } header: {
-                    Text("History")
+                    Text("歷史紀錄")
                 } footer: {
-                    Text("Without audio, history keeps only text and dictations cannot be transcribed again.")
+                    Text("沒有錄音檔的話，歷史紀錄只會保留文字，聽寫也無法重新轉錄。")
                 }
                 .onChange(of: settings.settings.retention) {
                     Task { await model.applyRetention() }
                 }
 
-                Section("Dictate anywhere") {
+                Section("隨處聽寫") {
                     NavigationLink {
                         KeyboardSetupView()
                     } label: {
-                        SettingsRow(title: "Set up the KVoice keyboard", detail: nil, icon: "keyboard", color: .gray)
+                        SettingsRow(title: "設定 KVoice 鍵盤", detail: nil, icon: "keyboard", color: .gray)
                     }
                     Button {
                         showsActionButton = true
                     } label: {
                         HStack {
-                            SettingsRow(title: "Action Button", detail: nil, icon: "button.vertical.right.press", color: .orange)
+                            SettingsRow(title: "動作按鈕", detail: nil, icon: "button.vertical.right.press", color: .orange)
                             Image(systemName: "chevron.right")
                                 .font(.footnote.weight(.semibold))
                                 .foregroundStyle(.tertiary)
@@ -79,32 +79,32 @@ struct SettingsView: View {
                     .foregroundStyle(.primary)
                 }
 
-                Section("Privacy") {
+                Section("隱私") {
                     Label {
-                        Text("Recordings and transcripts stay on this device. Nothing is sent anywhere unless you choose a cloud engine or AI provider, and then only the text or audio of that dictation goes to it with your key. No analytics, no accounts.")
+                        Text("錄音和逐字稿都只留在這個裝置上。除非你選擇雲端引擎或 AI 供應商，否則不會傳送任何資料；就算選了，也只有該次聽寫的文字或音訊會搭配你的金鑰送出。沒有分析追蹤，也不需要帳號。")
                             .font(.callout)
                     } icon: {
                         Image(systemName: "lock.shield").foregroundStyle(.green)
                     }
                 }
 
-                Section("About") {
-                    LabeledContent("Version", value: Self.version)
-                    LabeledContent("License", value: "MIT")
+                Section("關於") {
+                    LabeledContent("版本", value: Self.version)
+                    LabeledContent("授權", value: "MIT")
                     NavigationLink("Diagnostics") { DiagnosticsView() }
                 }
             }
-            .navigationTitle("Settings")
+            .navigationTitle("設定")
             .navigationDestination(isPresented: $showsActionButton) { ActionButtonSetupView() }
-            .confirmationDialog("Delete all history?", isPresented: $confirmingDeleteHistory, titleVisibility: .visible) {
-                Button("Delete All", role: .destructive) {
+            .confirmationDialog("要刪除所有歷史紀錄嗎？", isPresented: $confirmingDeleteHistory, titleVisibility: .visible) {
+                Button("全部刪除", role: .destructive) {
                     Task {
                         try? await model.history?.deleteAll()
                         model.historyChanged()
                     }
                 }
             } message: {
-                Text("All transcripts and recordings are removed from this device.")
+                Text("所有逐字稿和錄音都會從這個裝置移除。")
             }
         }
     }
@@ -154,18 +154,18 @@ struct AIProviderSettingsView: View {
                     }
                 ))
             } header: {
-                Text("Default provider")
+                Text("預設供應商")
             } footer: {
-                Text("Used by AI modes unless a mode picks its own. Apple Intelligence runs on this device with no key. Other providers use your own API key, stored in the Keychain on this device.")
+                Text("AI 模式會使用它，除非模式自行指定。Apple Intelligence 在這個裝置上執行，不需要金鑰。其他供應商使用你自己的 API 金鑰，存放在這個裝置的鑰匙圈。")
             }
 
             Section {
-                Text("Plain Dictation mode never uses AI and works offline. If an AI step fails, KVoice keeps the transcript so nothing you said is lost.")
+                Text("純聽寫模式不會使用 AI，可離線使用。如果 AI 步驟失敗，KVoice 會保留逐字稿，你說的內容不會遺失。")
                     .font(.callout)
                     .foregroundStyle(.secondary)
             }
         }
-        .navigationTitle("AI formatting")
+        .navigationTitle("AI 整理")
         .navigationBarTitleDisplayMode(.inline)
     }
 }
@@ -196,30 +196,30 @@ struct TranscriptionSettingsView: View {
                     }
                 }
             } header: {
-                Text("Default engine")
+                Text("預設引擎")
             } footer: {
-                Text("Modes can choose their own engine.")
+                Text("各個模式可以選擇自己的引擎。")
             }
 
             Section {
                 if !AppleSpeechEngine.isAvailable {
-                    Label("On-device speech recognition is not available on this device.", systemImage: "exclamationmark.triangle")
+                    Label("這部裝置無法使用裝置上的語音辨識。", systemImage: "exclamationmark.triangle")
                         .foregroundStyle(.secondary)
                 } else {
-                    LabeledContent("Language", value: Locale.current.localizedString(forIdentifier: Locale.current.identifier) ?? Locale.current.identifier)
+                    LabeledContent("語言", value: Locale.current.localizedString(forIdentifier: Locale.current.identifier) ?? Locale.current.identifier)
                     if let progress = assets.speechAssetProgress {
-                        ProgressView(value: progress) { Text("Downloading speech model…") }
+                        ProgressView(value: progress) { Text("正在下載語音模型…") }
                     } else {
                         switch assets.speechAssetStatus {
                         case .installed:
-                            Label("Speech model installed", systemImage: "checkmark.circle.fill").foregroundStyle(.green)
+                            Label("語音模型已安裝", systemImage: "checkmark.circle.fill").foregroundStyle(.green)
                         case .unsupported:
-                            Label("Your device language is not supported. Pick a language in a mode.", systemImage: "info.circle")
+                            Label("不支援你的裝置語言。請在模式中選擇語言。", systemImage: "info.circle")
                                 .foregroundStyle(.secondary)
                         case .downloading:
-                            Label("The speech model is downloading.", systemImage: "arrow.down.circle")
+                            Label("語音模型下載中。", systemImage: "arrow.down.circle")
                         case .supported, nil:
-                            Button("Download Speech Model", systemImage: "arrow.down.circle") {
+                            Button("下載語音模型", systemImage: "arrow.down.circle") {
                                 Task { await assets.installSpeechAssets() }
                             }
                         }
@@ -228,7 +228,7 @@ struct TranscriptionSettingsView: View {
             } header: {
                 Text("Apple Speech")
             } footer: {
-                Text("Apple's on-device recognizer. It downloads a small model per language the first time.")
+                Text("Apple 的裝置上辨識器。每種語言第一次使用時會下載一個小型模型。")
             }
 
             Section {
@@ -240,9 +240,9 @@ struct TranscriptionSettingsView: View {
                     )
                 }
             } header: {
-                Text("Whisper models")
+                Text("Whisper 模型")
             } footer: {
-                Text("Whisper runs on this device in 100+ languages, detects the language, and can translate to English. Models download once from the WhisperKit model repository.")
+                Text("Whisper 在這個裝置上執行，支援 100 多種語言，會自動偵測語言，也能翻譯成英文。模型只需從 WhisperKit 模型庫下載一次。")
             }
 
             if engine.kind == .cloud {
@@ -252,9 +252,9 @@ struct TranscriptionSettingsView: View {
                         set: { settings.settings.defaultEngine = .cloud($0) }
                     ))
                 } header: {
-                    Text("Cloud transcription")
+                    Text("雲端轉錄")
                 } footer: {
-                    Text("Audio is sent to the provider you choose with your key: OpenAI, Groq, Google AI Studio, Google Vertex AI, or any OpenAI-compatible /audio/transcriptions endpoint. Google providers accept recordings up to about \(GeminiTranscriptionEngine.maxAudioMinutes) minutes.")
+                    Text("音訊會連同你的金鑰傳送給你選擇的供應商：OpenAI、Groq、Google AI Studio、Google Vertex AI，或任何相容 OpenAI 的 /audio/transcriptions 端點。Google 的供應商可接受長度約 \(GeminiTranscriptionEngine.maxAudioMinutes) 分鐘以內的錄音。")
                 }
             }
 
@@ -274,13 +274,13 @@ struct TranscriptionSettingsView: View {
                 }
             }
         }
-        .navigationTitle("Transcription")
+        .navigationTitle("轉錄")
         .navigationBarTitleDisplayMode(.inline)
         .task { await assets.refresh() }
-        .alert("Download failed", isPresented: Binding(
+        .alert("下載失敗", isPresented: Binding(
             get: { assets.errorMessage != nil }, set: { if !$0 { assets.errorMessage = nil } }
         )) {
-            Button("OK", role: .cancel) {}
+            Button("好", role: .cancel) {}
         } message: {
             Text(assets.errorMessage ?? "")
         }
@@ -326,33 +326,33 @@ struct WhisperModelRow: View {
             }
             Spacer()
             if assets.isDownloading(whisper) {
-                Button("Cancel", systemImage: "xmark.circle") { assets.cancelDownload(whisper) }
+                Button("取消", systemImage: "xmark.circle") { assets.cancelDownload(whisper) }
                     .labelStyle(.iconOnly)
                     .buttonStyle(.borderless)
             } else if installed {
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill").foregroundStyle(Color.accentColor).font(.title3)
                 } else {
-                    Button("Use", action: onSelect).buttonStyle(.glass).controlSize(.small)
+                    Button("使用", action: onSelect).buttonStyle(.glass).controlSize(.small)
                 }
             } else {
-                Button("Get", systemImage: "arrow.down.circle") { assets.download(whisper) }
+                Button("下載", systemImage: "arrow.down.circle") { assets.download(whisper) }
                     .buttonStyle(.glass)
                     .controlSize(.small)
             }
         }
         .swipeActions {
             if installed {
-                Button("Delete", systemImage: "trash", role: .destructive) { confirmingDelete = true }
+                Button("刪除", systemImage: "trash", role: .destructive) { confirmingDelete = true }
             }
         }
         .contextMenu {
             if installed {
-                Button("Delete Model", systemImage: "trash", role: .destructive) { confirmingDelete = true }
+                Button("刪除模型", systemImage: "trash", role: .destructive) { confirmingDelete = true }
             }
         }
-        .confirmationDialog("Delete the \(whisper.name) model?", isPresented: $confirmingDelete, titleVisibility: .visible) {
-            Button("Delete", role: .destructive) { Task { await assets.delete(whisper) } }
+        .confirmationDialog("要刪除 \(whisper.name) 模型嗎？", isPresented: $confirmingDelete, titleVisibility: .visible) {
+            Button("刪除", role: .destructive) { Task { await assets.delete(whisper) } }
         }
     }
 }
@@ -360,9 +360,9 @@ struct WhisperModelRow: View {
 extension TranscriptionEngineSelection.Kind {
     var summary: String {
         switch self {
-        case .appleSpeech: "On device, no download beyond a small system model."
-        case .whisper: "On device, downloadable models, 100+ languages."
-        case .cloud: "OpenAI, Groq, Google AI Studio, Vertex AI or a custom endpoint with your API key."
+        case .appleSpeech: "裝置上執行，除了小型系統模型外不需額外下載。"
+        case .whisper: "裝置上執行，可下載模型，支援 100 多種語言。"
+        case .cloud: "OpenAI、Groq、Google AI Studio、Vertex AI 或自訂端點，搭配你的 API 金鑰。"
         }
     }
 }

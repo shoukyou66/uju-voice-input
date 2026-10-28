@@ -7,13 +7,13 @@ import Foundation
 /// while an Action Button shortcut owns the microphone. Compiled into the app and the widget extension; it
 /// always runs in the app.
 struct DictateIntent: AppIntent {
-    static var title: LocalizedStringResource { "Dictate with KVoice" }
+    static var title: LocalizedStringResource { "用 KVoice 聽寫" }
     static var description: IntentDescription {
-        IntentDescription("Opens KVoice and starts recording. Run it again to finish the dictation.")
+        IntentDescription("開啟 KVoice 並開始錄音。再執行一次即可結束聽寫。")
     }
     static var supportedModes: IntentModes { .foreground(.immediate) }
 
-    @Parameter(title: "Mode", description: "The mode to dictate in. Uses the active mode when empty.")
+    @Parameter(title: "模式", description: "要用來聽寫的模式。留空則使用目前啟用的模式。")
     var mode: ModeEntity?
 
     init() {}
@@ -23,7 +23,7 @@ struct DictateIntent: AppIntent {
     }
 
     static var parameterSummary: some ParameterSummary {
-        Summary("Dictate in \(\.$mode)")
+        Summary("用 \(\.$mode) 聽寫")
     }
 
     @MainActor

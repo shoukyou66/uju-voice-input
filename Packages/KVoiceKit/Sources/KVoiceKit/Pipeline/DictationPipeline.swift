@@ -30,7 +30,7 @@ public enum DictationError: Error, Hashable, Sendable, LocalizedError {
         case .transcriptionFailed(let reason): reason
         case .formattingFailed(let reason): reason
         case .missingAPIKey(let provider): ProviderError.missingAPIKey(provider).errorDescription
-        case .cancelled: "Dictation was cancelled."
+        case .cancelled: "聽寫已取消。"
         }
     }
 

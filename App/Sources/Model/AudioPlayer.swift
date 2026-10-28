@@ -83,7 +83,7 @@ struct AudioPlayerBar: View {
             }
             .buttonStyle(.glassProminent)
             .buttonBorderShape(.circle)
-            .accessibilityLabel(player.isPlaying ? "Pause recording" : "Play recording")
+            .accessibilityLabel(player.isPlaying ? "暫停播放錄音" : "播放錄音")
 
             ProgressView(value: player.progress)
                 .tint(.accentColor)

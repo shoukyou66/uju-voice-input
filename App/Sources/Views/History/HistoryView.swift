@@ -27,21 +27,21 @@ struct HistoryView: View {
                 if loaded && records.isEmpty {
                     if query.isEmpty {
                         ContentUnavailableView(
-                            "No dictations yet", systemImage: "clock.arrow.circlepath",
+                            "還沒有聽寫紀錄", systemImage: "clock.arrow.circlepath",
                             description: Text(model.history == nil
-                                              ? "History is unavailable on this device."
-                                              : "Your dictations appear here, with their audio and transcript.")
+                                              ? "此裝置無法使用歷史紀錄。"
+                                              : "你的聽寫會顯示在這裡，包含錄音和逐字稿。")
                         )
                     } else {
                         ContentUnavailableView.search(text: query)
                     }
                 }
             }
-            .navigationTitle("History")
+            .navigationTitle("歷史紀錄")
             .navigationDestination(for: HistoryRecord.self) { record in
                 HistoryDetailView(record: record)
             }
-            .searchable(text: $query, prompt: "Search transcripts")
+            .searchable(text: $query, prompt: "搜尋逐字稿")
             .task(id: TaskKey(query: query, revision: model.historyRevision)) {
                 await load()
             }
@@ -65,9 +65,9 @@ struct HistoryView: View {
         return grouped.keys.sorted(by: >).map { day in
             let title: String
             if calendar.isDateInToday(day) {
-                title = "Today"
+                title = "今天"
             } else if calendar.isDateInYesterday(day) {
-                title = "Yesterday"
+                title = "昨天"
             } else {
                 title = day.formatted(.dateTime.weekday(.wide).month().day())
             }
@@ -106,10 +106,10 @@ struct HistoryRow: View {
                 Text(record.formattedText)
                     .lineLimit(2)
             case .pending:
-                Label("Waiting to be transcribed", systemImage: "hourglass")
+                Label("等待轉錄", systemImage: "hourglass")
                     .foregroundStyle(.secondary)
             case .failed:
-                Label("Not transcribed: \(record.failureMessage ?? "failed")", systemImage: "exclamationmark.triangle")
+                Label("未轉錄：\(record.failureMessage ?? "failed")", systemImage: "exclamationmark.triangle")
                     .foregroundStyle(.orange)
                     .lineLimit(2)
             }
@@ -118,7 +118,7 @@ struct HistoryRow: View {
                 Text("·")
                 Text(record.date, style: .time)
                 if record.audioFileName != nil {
-                    Image(systemName: "waveform").accessibilityLabel("Has audio")
+                    Image(systemName: "waveform").accessibilityLabel("有錄音")
                 }
             }
             .font(.caption)

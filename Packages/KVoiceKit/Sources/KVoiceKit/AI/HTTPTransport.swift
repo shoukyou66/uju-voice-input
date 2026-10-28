@@ -48,29 +48,29 @@ public enum ProviderError: Error, Equatable, Sendable, LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .missingAPIKey(let provider):
-            "Add your \(provider.displayName) API key in Settings."
+            "請到「設定」加入你的 \(provider.displayName) API 金鑰。"
         case .invalidBaseURL:
-            "The endpoint URL is not valid."
+            "端點網址無效。"
         case .insecureBaseURL:
-            "The endpoint must use HTTPS."
+            "端點必須使用 HTTPS。"
         case .missingModel:
-            "Choose a model for this provider in Settings."
+            "請到「設定」為這個供應商選擇模型。"
         case .unauthorized:
-            "The provider rejected the API key."
+            "供應商拒絕了這組 API 金鑰。"
         case .rateLimited:
-            "The provider is rate limiting requests or your quota is used up. Try again shortly."
+            "供應商限制了請求次數，或你的額度已用完。請稍後再試。"
         case .http(let status, let message):
-            "The provider returned an error (\(status))" + (message.map { ": \($0)" } ?? ".")
+            "供應商回傳錯誤（\(status)）" + (message.map { ": \($0)" } ?? ".")
         case .malformedResponse:
-            "The provider sent a response KVoice could not read."
+            "供應商傳回的回應 KVoice 無法讀取。"
         case .emptyResponse:
-            "The provider returned no text."
+            "供應商沒有回傳文字。"
         case .offline:
-            "No internet connection."
+            "沒有網路連線。"
         case .unavailable(let reason):
             reason
         case .refused:
-            "The model declined to format this text."
+            "模型拒絕整理這段文字。"
         }
     }
 }

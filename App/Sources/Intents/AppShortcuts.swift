@@ -3,9 +3,9 @@ import Foundation
 
 /// Stops the dictation in progress and returns its text (for Shortcuts).
 struct StopDictationIntent: AppIntent {
-    static var title: LocalizedStringResource { "Stop KVoice Dictation" }
+    static var title: LocalizedStringResource { "停止 KVoice 聽寫" }
     static var description: IntentDescription {
-        IntentDescription("Stops the KVoice dictation in progress and returns the finished text.")
+        IntentDescription("停止進行中的 KVoice 聽寫，並回傳完成的文字。")
     }
     static var supportedModes: IntentModes { .background }
 
@@ -24,48 +24,48 @@ struct KVoiceShortcuts: AppShortcutsProvider {
         AppShortcut(
             intent: ToggleDictationIntent(),
             phrases: [
-                "Toggle \(.applicationName) dictation",
-                "Toggle dictation with \(.applicationName)"
+                "切換 \(.applicationName) 聽寫",
+                "用 \(.applicationName) 切換聽寫"
             ],
-            shortTitle: "Toggle Dictation",
+            shortTitle: "切換聽寫",
             systemImageName: "waveform.badge.mic"
         )
         AppShortcut(
             intent: DictateIntent(),
             phrases: [
-                "Dictate with \(.applicationName)",
-                "Start \(.applicationName)",
-                "Start dictating with \(.applicationName)",
-                "Dictate \(\.$mode) with \(.applicationName)"
+                "用 \(.applicationName) 聽寫",
+                "啟動 \(.applicationName)",
+                "用 \(.applicationName) 開始聽寫",
+                "用 \(.applicationName) 聽寫 \(\.$mode)"
             ],
-            shortTitle: "Dictate",
+            shortTitle: "聽寫",
             systemImageName: "mic.fill"
         )
         AppShortcut(
             intent: StopDictationIntent(),
             phrases: [
-                "Stop \(.applicationName)",
-                "Stop dictating with \(.applicationName)"
+                "停止 \(.applicationName)",
+                "用 \(.applicationName) 停止聽寫"
             ],
-            shortTitle: "Stop Dictation",
+            shortTitle: "停止聽寫",
             systemImageName: "stop.fill"
         )
         AppShortcut(
             intent: BeginDictationIntent(),
             phrases: [
-                "Begin dictation with \(.applicationName)",
-                "Begin \(.applicationName) dictation"
+                "用 \(.applicationName) 準備聽寫",
+                "準備 \(.applicationName) 聽寫"
             ],
-            shortTitle: "Begin Dictation",
+            shortTitle: "開始聽寫",
             systemImageName: "waveform.badge.mic"
         )
         AppShortcut(
             intent: TranscribeAudioIntent(),
             phrases: [
-                "Transcribe audio with \(.applicationName)",
-                "Transcribe a recording with \(.applicationName)"
+                "用 \(.applicationName) 轉錄音訊",
+                "用 \(.applicationName) 轉錄錄音"
             ],
-            shortTitle: "Transcribe Audio",
+            shortTitle: "轉錄音訊",
             systemImageName: "waveform"
         )
     }

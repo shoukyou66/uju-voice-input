@@ -14,11 +14,11 @@ public enum AppleIntelligenceAvailability: Sendable, Hashable {
 
     public var message: String {
         switch self {
-        case .available: "Apple Intelligence is ready."
-        case .deviceNotEligible: "This device does not support Apple Intelligence."
-        case .notEnabled: "Turn on Apple Intelligence in Settings to use it for formatting."
-        case .modelNotReady: "Apple Intelligence is still downloading. Try again later."
-        case .unknown: "Apple Intelligence is not available right now."
+        case .available: "Apple Intelligence 已就緒。"
+        case .deviceNotEligible: "這部裝置不支援 Apple Intelligence。"
+        case .notEnabled: "請到「設定」開啟 Apple Intelligence，才能用它來整理文字。"
+        case .modelNotReady: "Apple Intelligence 仍在下載中，請稍後再試。"
+        case .unknown: "Apple Intelligence 目前無法使用。"
         }
     }
 }
@@ -67,15 +67,15 @@ public struct AppleIntelligenceFormatter: TextFormatter {
             case .guardrailViolation, .refusal:
                 throw ProviderError.refused
             case .exceededContextWindowSize:
-                throw ProviderError.unavailable("The text is too long for Apple Intelligence. Try a cloud provider.")
+                throw ProviderError.unavailable("文字太長，Apple Intelligence 無法處理。請改用雲端供應商。")
             case .unsupportedLanguageOrLocale:
-                throw ProviderError.unavailable("Apple Intelligence does not support this language yet.")
+                throw ProviderError.unavailable("Apple Intelligence 目前還不支援這個語言。")
             case .assetsUnavailable:
                 throw ProviderError.unavailable(AppleIntelligenceAvailability.modelNotReady.message)
             case .rateLimited, .concurrentRequests:
                 throw ProviderError.rateLimited
             default:
-                throw ProviderError.unavailable("Apple Intelligence could not format this text.")
+                throw ProviderError.unavailable("Apple Intelligence 無法整理這段文字。")
             }
         }
     }

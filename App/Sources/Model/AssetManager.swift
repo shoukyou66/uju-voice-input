@@ -47,7 +47,7 @@ final class AssetManager {
                 installedWhisperModels.insert(model.id)
             } catch is CancellationError {
             } catch {
-                errorMessage = "The \(model.name) model could not be downloaded. \(error.localizedDescription)"
+                errorMessage = "無法下載 \(model.name) 模型。\(error.localizedDescription)"
             }
         }
     }

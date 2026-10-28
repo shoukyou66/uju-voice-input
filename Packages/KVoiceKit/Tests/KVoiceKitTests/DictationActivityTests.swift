@@ -397,10 +397,10 @@ import Testing
         #expect(shortcutRecording().activity.keyboardRoute(now: at(1))
             == .blocked("Recording with the Action Button — tap Stop in the recording panel"))
         #expect(shortcutRecording().activity.keyboardRoute(now: at(Lease.shortcutRecording)) == .openApp)
-        #expect(processing().activity.keyboardRoute(now: at(1)) == .blocked("Transcribing…"))
+        #expect(processing().activity.keyboardRoute(now: at(1)) == .blocked("轉錄中…"))
         var formatting = processing()
         _ = formatting.handle(.jobStage(jobID: id(9), stage: .formatting, now: at(1)))
-        #expect(formatting.activity.keyboardRoute(now: at(2)) == .blocked("Formatting…"))
+        #expect(formatting.activity.keyboardRoute(now: at(2)) == .blocked("整理中…"))
     }
 
     @Test func appStateIsAProjectionOfStandby() {

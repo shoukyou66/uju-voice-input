@@ -28,7 +28,7 @@ public enum ProviderKind: String, Codable, Sendable, Hashable, CaseIterable, Ide
         case .vertexAI: "Google Vertex AI"
         case .groq: "Groq"
         case .openRouter: "OpenRouter"
-        case .customOpenAICompatible: "Custom (OpenAI-compatible)"
+        case .customOpenAICompatible: "自訂（相容 OpenAI）"
         }
     }
 
@@ -169,7 +169,7 @@ public struct TranscriptionEngineSelection: Codable, Sendable, Hashable {
         switch kind {
         case .appleSpeech: "Apple Speech"
         case .whisper: "Whisper " + (whisperModelID.flatMap { WhisperModel.model(id: $0)?.name } ?? whisperModelID ?? "")
-        case .cloud: "Cloud " + (cloud?.model ?? "")
+        case .cloud: "雲端 " + (cloud?.model ?? "")
         }
     }
 }

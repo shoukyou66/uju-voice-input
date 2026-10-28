@@ -8,7 +8,7 @@ import Testing
         raw: String, formatted: String, date: Date = .now, audio: String? = nil
     ) -> HistoryRecord {
         HistoryRecord(
-            date: date, duration: 3, modeID: Mode.BuiltInID.cleanUp, modeName: "Clean up",
+            date: date, duration: 3, modeID: Mode.BuiltInID.cleanUp, modeName: "整理贅詞",
             engine: "Apple Speech", provider: "Apple Intelligence",
             rawTranscript: raw, formattedText: formatted, audioFileName: audio
         )
@@ -26,7 +26,7 @@ import Testing
 
         var edited = older
         edited.formattedText = "Edited."
-        edited.modeName = "Email"
+        edited.modeName = "電子郵件"
         try await store.update(edited)
         #expect(try await store.record(id: older.id) == edited)
 

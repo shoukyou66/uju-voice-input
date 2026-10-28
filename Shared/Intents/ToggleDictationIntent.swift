@@ -9,15 +9,15 @@ import Foundation
 /// Also a `LiveActivityIntent`: only those may start a Live Activity while
 /// KVoice is in the background, and an audio recording intent must start one.
 struct ToggleDictationIntent: AudioRecordingIntent, LiveActivityIntent {
-    static var title: LocalizedStringResource { "Toggle Dictation" }
+    static var title: LocalizedStringResource { "切換聽寫" }
     static var description: IntentDescription {
-        IntentDescription("Starts dictating in the background. Run it again to stop; KVoice copies the text and returns it.")
+        IntentDescription("在背景開始聽寫。再執行一次即可停止；KVoice 會拷貝文字並回傳。")
     }
     /// Background, continuing in the foreground on demand (when iOS does
     /// not let KVoice start the microphone in the background).
     static var supportedModes: IntentModes { [.background, .foreground(.dynamic)] }
 
-    @Parameter(title: "Mode", description: "The mode to dictate in. Uses the active mode when empty.")
+    @Parameter(title: "模式", description: "要用來聽寫的模式。留空則使用目前啟用的模式。")
     var mode: ModeEntity?
 
     init() {}
@@ -27,7 +27,7 @@ struct ToggleDictationIntent: AudioRecordingIntent, LiveActivityIntent {
     }
 
     static var parameterSummary: some ParameterSummary {
-        Summary("Toggle dictation in \(\.$mode)")
+        Summary("在 \(\.$mode) 切換聽寫")
     }
 
     @MainActor

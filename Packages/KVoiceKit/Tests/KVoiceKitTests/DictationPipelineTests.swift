@@ -41,7 +41,7 @@ import Testing
 
         #expect(result.text == "FORMATTED: um hello world")
         #expect(result.record.rawTranscript == "um hello world")
-        #expect(result.record.modeName == "Email")
+        #expect(result.record.modeName == "電子郵件")
         #expect(result.record.engine == "Apple Speech")
         #expect(result.record.provider == "Apple Intelligence")
         #expect(result.formattingError == nil)

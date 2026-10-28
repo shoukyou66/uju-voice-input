@@ -48,26 +48,26 @@ struct OnboardingView: View {
         switch step {
         case .welcome:
             OnboardingPage(
-                icon: "waveform", title: "Welcome to KVoice",
-                text: "Speak once, get finished text in any app. KVoice transcribes on your device and can tidy what you said into a message, an email or notes."
+                icon: "waveform", title: "歡迎使用 KVoice",
+                text: "說一次，就能在任何 App 得到整理好的文字。KVoice 在你的裝置上轉錄，還能把你說的話整理成訊息、電子郵件或筆記。"
             ) {
                 VStack(alignment: .leading, spacing: 14) {
-                    Feature(icon: "lock.shield", text: "Private by default: recordings stay on this device.")
-                    Feature(icon: "square.stack.3d.up", text: "Modes for every kind of writing, or plain dictation with no AI.")
-                    Feature(icon: "keyboard", text: "A keyboard that brings dictation to every app.")
+                    Feature(icon: "lock.shield", text: "預設注重隱私：錄音只會留在這個裝置上。")
+                    Feature(icon: "square.stack.3d.up", text: "各種文字都有對應的模式，也可以選不用 AI 的純聽寫。")
+                    Feature(icon: "keyboard", text: "一個讓每個 App 都能聽寫的鍵盤。")
                 }
             }
         case .microphone:
             OnboardingPage(
-                icon: "mic.fill", title: "Microphone",
-                text: "KVoice listens only while you dictate. The microphone indicator shows whenever it is on."
+                icon: "mic.fill", title: "麥克風",
+                text: "KVoice 只在你聽寫時才會聆聽。麥克風開啟時，畫面上會顯示麥克風指示燈。"
             ) {
                 if micGranted {
-                    Label("Microphone access is on", systemImage: "checkmark.circle.fill")
+                    Label("麥克風權限已開啟", systemImage: "checkmark.circle.fill")
                         .foregroundStyle(.green)
                         .font(.headline)
                 } else {
-                    Button("Allow Microphone", systemImage: "mic") {
+                    Button("允許使用麥克風", systemImage: "mic") {
                         Task { micGranted = await AudioRecorder.requestPermission() }
                     }
                     .buttonStyle(.glassProminent)
@@ -76,27 +76,27 @@ struct OnboardingView: View {
             }
         case .engine:
             OnboardingPage(
-                icon: "text.bubble", title: "Speech recognition",
-                text: "Choose how speech becomes text. You can change this any time in Settings, where you can also use cloud transcription with your own OpenAI, Groq, Google AI Studio or Google Vertex AI key."
+                icon: "text.bubble", title: "語音辨識",
+                text: "選擇語音轉成文字的方式。之後隨時可以在「設定」更改，也可以用你自己的 OpenAI、Groq、Google AI Studio 或 Google Vertex AI 金鑰使用雲端轉錄。"
             ) {
                 EngineChoice()
             }
         case .ai:
             OnboardingPage(
-                icon: "sparkles", title: "AI formatting (optional)",
-                text: "AI modes rewrite your words into clean text. Use Apple Intelligence on this device, or add your own key for OpenAI, Anthropic, Google AI Studio (Gemini), Google Vertex AI, Groq, OpenRouter or any compatible service in Settings."
+                icon: "sparkles", title: "AI 整理（選用）",
+                text: "AI 模式會把你說的話改寫成乾淨的文字。可以使用裝置上的 Apple Intelligence，或在「設定」加入你自己的 OpenAI、Anthropic、Google AI Studio (Gemini)、Google Vertex AI、Groq、OpenRouter 或其他相容服務的金鑰。"
             ) {
                 VStack(alignment: .leading, spacing: 12) {
                     AppleIntelligenceStatus()
-                    Text("Plain Dictation always works without AI.")
+                    Text("純聽寫不需要 AI 也能使用。")
                         .font(.callout)
                         .foregroundStyle(.secondary)
                 }
             }
         case .keyboard:
             OnboardingPage(
-                icon: "keyboard", title: "Add the KVoice keyboard",
-                text: "Dictate into any app from the KVoice keyboard."
+                icon: "keyboard", title: "加入 KVoice 鍵盤",
+                text: "用 KVoice 鍵盤在任何 App 裡聽寫。"
             ) {
                 VStack(alignment: .leading, spacing: 14) {
                     KeyboardSetupSteps()
@@ -106,8 +106,8 @@ struct OnboardingView: View {
             }
         case .actionButton:
             OnboardingPage(
-                icon: "button.vertical.right.press", title: "Action Button (optional)",
-                text: "Dictate from any app without switching to KVoice. You can set this up later in Settings › Action Button."
+                icon: "button.vertical.right.press", title: "動作按鈕（選用）",
+                text: "不用切到 KVoice，就能在任何 App 聽寫。之後可以到「設定」›「動作按鈕」設定。"
             ) {
                 VStack(alignment: .leading, spacing: 14) {
                     ActionButtonExplainer()
@@ -121,11 +121,11 @@ struct OnboardingView: View {
     private var footer: some View {
         HStack {
             if step != .welcome {
-                Button("Back") { step = Step(rawValue: step.rawValue - 1) ?? .welcome }
+                Button("返回") { step = Step(rawValue: step.rawValue - 1) ?? .welcome }
                     .buttonStyle(.glass)
             }
             Spacer()
-            Button(step == Step.allCases.last ? "Start Dictating" : "Continue") {
+            Button(step == Step.allCases.last ? "開始聽寫" : "繼續") {
                 if let next = Step(rawValue: step.rawValue + 1) { step = next } else { onFinish() }
             }
             .buttonStyle(.glassProminent)
@@ -178,23 +178,23 @@ private struct EngineChoice: View {
         let assets = model.assets
         VStack(spacing: 12) {
             option(
-                title: "Apple Speech", detail: "Built in, fast, no large download.",
+                title: "Apple Speech", detail: "內建、速度快，不用下載大型檔案。",
                 selected: settings.settings.defaultEngine.kind == .appleSpeech
             ) {
                 settings.settings.defaultEngine = .appleSpeech
                 Task { await assets.installSpeechAssets() }
             }
             option(
-                title: "Whisper Base", detail: "On device, 100+ languages, \(WhisperModel.base.approximateSizeMB) MB download.",
+                title: "Whisper Base", detail: "裝置上執行，支援 100 多種語言，需下載 \(WhisperModel.base.approximateSizeMB) MB。",
                 selected: settings.settings.defaultEngine.kind == .whisper
             ) {
                 settings.settings.defaultEngine = .whisper(WhisperModel.base.id)
                 assets.download(.base)
             }
             if let progress = assets.whisperProgress[WhisperModel.base.id] {
-                ProgressView(value: progress) { Text("Downloading Whisper Base…").font(.caption) }
+                ProgressView(value: progress) { Text("正在下載 Whisper Base…").font(.caption) }
             } else if let progress = assets.speechAssetProgress {
-                ProgressView(value: progress) { Text("Downloading speech model…").font(.caption) }
+                ProgressView(value: progress) { Text("正在下載語音模型…").font(.caption) }
             }
         }
         .task { await assets.refresh() }

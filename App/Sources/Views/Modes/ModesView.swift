@@ -16,7 +16,7 @@ struct ModesView: View {
                             ModeRow(mode: mode, isActive: mode.id == model.modes.activeModeID)
                         }
                         .swipeActions(edge: .leading) {
-                            Button("Use", systemImage: "checkmark.circle") {
+                            Button("使用", systemImage: "checkmark.circle") {
                                 try? model.modes.setActiveMode(id: mode.id)
                             }
                             .tint(.accentColor)
@@ -31,16 +31,16 @@ struct ModesView: View {
                         perform { for id in ids { try model.modes.delete(id: id) } }
                     }
                 } footer: {
-                    Text("Modes turn what you say into a finished format. Swipe right to make a mode active; built-in modes can be edited and reset.")
+                    Text("模式會把你說的話整理成完成的格式。向右滑可啟用某個模式；內建模式可以編輯與重設。")
                 }
 
                 Section {
-                    Button("Reset Built-in Modes", systemImage: "arrow.counterclockwise", role: .destructive) {
+                    Button("重設內建模式", systemImage: "arrow.counterclockwise", role: .destructive) {
                         confirmingReset = true
                     }
                 }
             }
-            .navigationTitle("Modes")
+            .navigationTitle("模式")
             .navigationDestination(for: UUID.self) { id in
                 if let mode = model.modes.mode(id: id) {
                     ModeEditorView(mode: mode, isNew: false)
@@ -49,7 +49,7 @@ struct ModesView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) { EditButton() }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("New Mode", systemImage: "plus") {
+                    Button("新增模式", systemImage: "plus") {
                         newMode = Mode(name: "", icon: "text.bubble", instructions: "")
                     }
                 }
@@ -60,14 +60,14 @@ struct ModesView: View {
                 }
             }
             .confirmationDialog(
-                "Reset built-in modes?", isPresented: $confirmingReset, titleVisibility: .visible
+                "要重設內建模式嗎？", isPresented: $confirmingReset, titleVisibility: .visible
             ) {
-                Button("Reset", role: .destructive) { perform { try model.modes.resetBuiltIns() } }
+                Button("重設", role: .destructive) { perform { try model.modes.resetBuiltIns() } }
             } message: {
-                Text("Your edits to the built-in modes are replaced with the originals. Custom modes are kept.")
+                Text("你對內建模式的修改會被還原成原始內容。自訂模式會保留。")
             }
-            .alert("Could not save", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
-                Button("OK", role: .cancel) {}
+            .alert("無法儲存", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
+                Button("好", role: .cancel) {}
             } message: {
                 Text(errorMessage ?? "")
             }
@@ -99,7 +99,7 @@ struct ModeRow: View {
             }
             Spacer()
             if isActive {
-                Text("Active")
+                Text("使用中")
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(Color.accentColor)
             }
@@ -108,10 +108,10 @@ struct ModeRow: View {
     }
 
     private var subtitle: String {
-        var parts = [mode.usesAI ? "AI" : "Plain dictation"]
-        parts.append(mode.language.map(LanguageOptions.name(for:)) ?? "Any language")
-        if mode.translateToEnglish { parts.append("to English") }
-        if !mode.isBuiltIn { parts.append("Custom") }
+        var parts = [mode.usesAI ? "AI" : "純聽寫"]
+        parts.append(mode.language.map(LanguageOptions.name(for:)) ?? "任何語言")
+        if mode.translateToEnglish { parts.append("翻成英文") }
+        if !mode.isBuiltIn { parts.append("自訂") }
         return parts.joined(separator: " · ")
     }
 }

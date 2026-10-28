@@ -7,7 +7,7 @@ struct ProviderConfigurationFields: View {
     @Binding var configuration: ProviderConfiguration
 
     var body: some View {
-        Picker("Provider", selection: Binding(
+        Picker("供應商", selection: Binding(
             get: { configuration.kind },
             set: { configuration = model.settings.settings.configuration(for: $0) }
         )) {
@@ -25,7 +25,7 @@ struct ProviderConfigurationFields: View {
                 isRequired: configuration.kind == .customOpenAICompatible
             )
             .id(configuration.kind)
-            LabeledContent("Model") {
+            LabeledContent("模型") {
                 TextField(configuration.kind.defaultModel.isEmpty ? "model-name" : configuration.kind.defaultModel,
                           text: $configuration.model)
                     .multilineTextAlignment(.trailing)
@@ -56,9 +56,9 @@ extension ProviderKind {
     var setupHint: String? {
         switch self {
         case .gemini:
-            "Create a key at aistudio.google.com (Get API key). Type any Gemini model ID, for example gemini-2.5-flash."
+            "到 aistudio.google.com 建立金鑰（Get API key）。可輸入任何 Gemini 模型 ID，例如 gemini-2.5-flash。"
         case .vertexAI:
-            "Use a Vertex AI express-mode API key from the Google Cloud console with the default URL, or set the base URL to https://LOCATION-aiplatform.googleapis.com/v1/projects/PROJECT/locations/LOCATION. Type any Gemini model ID, for example gemini-2.5-flash."
+            "使用 Google Cloud 主控台的 Vertex AI 快速模式 API 金鑰搭配預設網址，或將基礎網址設為 https://LOCATION-aiplatform.googleapis.com/v1/projects/PROJECT/locations/LOCATION。可輸入任何 Gemini 模型 ID，例如 gemini-2.5-flash。"
         default:
             nil
         }
@@ -81,7 +81,7 @@ struct BaseURLField: View {
     @State private var text = ""
 
     var body: some View {
-        LabeledContent(isRequired ? "Base URL" : "Base URL (optional)") {
+        LabeledContent(isRequired ? "基礎網址" : "基礎網址（選填）") {
             TextField(placeholder, text: $text)
                 .multilineTextAlignment(.trailing)
                 .keyboardType(.URL)
@@ -112,28 +112,28 @@ struct APIKeyField: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("API key")
+                Text("API 金鑰")
                 Spacer()
                 if let savedHint {
-                    Label("Saved ••••\(savedHint)", systemImage: "key.fill")
+                    Label("已儲存 ••••\(savedHint)", systemImage: "key.fill")
                         .font(.callout)
                         .foregroundStyle(.secondary)
                 } else {
-                    Text("Not set").foregroundStyle(.secondary)
+                    Text("未設定").foregroundStyle(.secondary)
                 }
             }
             HStack {
-                SecureField(savedHint == nil ? "Paste your \(provider.displayName) key" : "Replace key", text: $entry)
+                SecureField(savedHint == nil ? "貼上你的 \(provider.displayName) 金鑰" : "更換金鑰", text: $entry)
                     .textContentType(.password)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
                     .onSubmit(save)
                 if !entry.isEmpty {
-                    Button("Save", action: save)
+                    Button("儲存", action: save)
                         .buttonStyle(.glassProminent)
                         .controlSize(.small)
                 } else if savedHint != nil {
-                    Button("Remove", role: .destructive) { store(nil) }
+                    Button("移除", role: .destructive) { store(nil) }
                         .controlSize(.small)
                 }
             }
@@ -175,7 +175,7 @@ struct EngineSelectionFields: View {
     @Binding var selection: TranscriptionEngineSelection
 
     var body: some View {
-        Picker("Engine", selection: Binding(
+        Picker("引擎", selection: Binding(
             get: { selection.kind },
             set: { kind in
                 switch kind {
@@ -194,13 +194,13 @@ struct EngineSelectionFields: View {
         case .appleSpeech:
             EmptyView()
         case .whisper:
-            Picker("Model", selection: Binding(
+            Picker("模型", selection: Binding(
                 get: { selection.whisperModelID ?? WhisperModel.base.id },
                 set: { selection.whisperModelID = $0 }
             )) {
                 ForEach(WhisperModel.all) { whisper in
                     let installed = model.assets.installedWhisperModels.contains(whisper.id)
-                    Text(installed ? whisper.name : "\(whisper.name) (not downloaded)").tag(whisper.id)
+                    Text(installed ? whisper.name : "\(whisper.name)（未下載）").tag(whisper.id)
                 }
             }
         case .cloud:
@@ -216,7 +216,7 @@ struct CloudTranscriptionFields: View {
     @Binding var configuration: CloudTranscriptionConfiguration
 
     var body: some View {
-        Picker("Provider", selection: Binding(
+        Picker("供應商", selection: Binding(
             get: { configuration.provider },
             set: { configuration = CloudTranscriptionConfiguration(provider: $0) }
         )) {
@@ -230,7 +230,7 @@ struct CloudTranscriptionFields: View {
             isRequired: configuration.provider == .customOpenAICompatible
         )
         .id(configuration.provider)
-        LabeledContent("Model") {
+        LabeledContent("模型") {
             TextField(configuration.provider.defaultTranscriptionModel ?? "whisper-1", text: $configuration.model)
                 .multilineTextAlignment(.trailing)
                 .textInputAutocapitalization(.never)
@@ -245,8 +245,8 @@ extension TranscriptionEngineSelection.Kind {
     var displayName: String {
         switch self {
         case .appleSpeech: "Apple Speech"
-        case .whisper: "Whisper (on device)"
-        case .cloud: "Cloud (your key)"
+        case .whisper: "Whisper（裝置上）"
+        case .cloud: "雲端（你的金鑰）"
         }
     }
 }

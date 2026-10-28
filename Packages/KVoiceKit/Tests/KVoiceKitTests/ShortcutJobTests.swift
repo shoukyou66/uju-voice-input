@@ -202,7 +202,7 @@ import Testing
         let wav = history.newRecordingURL()
         try AudioFile.writeWAV(Signal.tone(seconds: 2), to: wav)
         let record = HistoryRecord(
-            duration: 2, modeName: "Notes", engine: "", rawTranscript: "", formattedText: "",
+            duration: 2, modeName: "筆記", engine: "", rawTranscript: "", formattedText: "",
             audioFileName: wav.lastPathComponent, status: .pending
         )
         try await history.add(record)

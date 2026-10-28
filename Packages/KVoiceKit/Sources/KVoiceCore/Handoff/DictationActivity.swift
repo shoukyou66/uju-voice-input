@@ -133,8 +133,8 @@ public struct DictationActivity: Codable, Sendable, Hashable {
         public static let shortcutRecordingKeyboard = "Recording with the Action Button — tap Stop in the recording panel"
         public static let shortcutRecordingApp = "Recording with the Action Button"
         public static let busy = "KVoice is still working on the previous dictation."
-        public static let transcribing = "Transcribing…"
-        public static let formatting = "Formatting…"
+        public static let transcribing = "轉錄中…"
+        public static let formatting = "整理中…"
     }
 
     public func keyboardRoute(now: Date) -> KeyboardRoute {

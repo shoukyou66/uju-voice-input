@@ -10,20 +10,20 @@ struct DiagnosticsView: View {
     var body: some View {
         List {
             Section {
-                Picker("Start strategy", selection: $strategy) {
-                    Text("Return immediately").tag(ToggleStartStrategy.returnImmediately)
-                    Text("Hold until stopped").tag(ToggleStartStrategy.holdUntilStopped)
+                Picker("啟動方式", selection: $strategy) {
+                    Text("立即回傳").tag(ToggleStartStrategy.returnImmediately)
+                    Text("持續到停止").tag(ToggleStartStrategy.holdUntilStopped)
                 }
                 .onChange(of: strategy) { _, value in ToggleStartStrategy.set(value) }
             } header: {
-                Text("Toggle Dictation")
+                Text("切換聽寫")
             } footer: {
-                Text("Hold until stopped keeps the shortcut running while it records, in case iOS only lends the microphone to a running shortcut.")
+                Text("「持續到停止」會讓捷徑在錄音期間保持執行，以防 iOS 只把麥克風借給執行中的捷徑。")
             }
 
-            Section("Log, newest first") {
+            Section("紀錄（最新在前）") {
                 if entries.isEmpty {
-                    Text("Empty").foregroundStyle(.secondary)
+                    Text("空白").foregroundStyle(.secondary)
                 }
                 ForEach(Array(entries.enumerated()), id: \.offset) { _, entry in
                     VStack(alignment: .leading, spacing: 2) {
@@ -38,10 +38,10 @@ struct DiagnosticsView: View {
         .navigationTitle("Diagnostics")
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
-                Button("Copy All", systemImage: "doc.on.doc") {
+                Button("全部拷貝", systemImage: "doc.on.doc") {
                     UIPasteboard.general.string = entries.map(Self.line).joined(separator: "\n")
                 }
-                Button("Clear", systemImage: "trash", role: .destructive) {
+                Button("清除", systemImage: "trash", role: .destructive) {
                     DiagnosticsLog.shared.clear()
                     reload()
                 }

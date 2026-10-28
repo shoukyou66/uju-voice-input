@@ -48,7 +48,7 @@ import Testing
 
     @Test func builtInModesAreCompleteAndStable() {
         #expect(Mode.builtIns.map(\.name) == [
-            "Dictation", "Clean up", "Message", "Email", "Notes", "Summary", "Translate to English"
+            "聽寫", "整理贅詞", "訊息", "電子郵件", "筆記", "摘要", "翻成英文"
         ])
         #expect(Mode.dictation.kind == .plainDictation)
         #expect(Mode.builtIns.dropFirst().allSatisfy { $0.kind == .aiFormat && !$0.instructions.isEmpty })

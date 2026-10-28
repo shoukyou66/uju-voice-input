@@ -7,9 +7,9 @@ import KVoiceKit
 /// The End button of the standby Live Activity: releases the microphone
 /// KVoice kept for the keyboard and the Action Button. Runs in the app.
 struct EndDictationSessionIntent: LiveActivityIntent {
-    static var title: LocalizedStringResource { "End KVoice Session" }
+    static var title: LocalizedStringResource { "結束 KVoice 聆聽" }
     static var description: IntentDescription {
-        IntentDescription("Stops KVoice from listening between dictations and releases the microphone.")
+        IntentDescription("讓 KVoice 不再於兩次聽寫之間持續聆聽，並釋放麥克風。")
     }
     static var isDiscoverable: Bool { false }
 

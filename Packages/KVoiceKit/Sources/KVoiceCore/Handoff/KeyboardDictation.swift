@@ -115,11 +115,11 @@ public struct KeyboardDictation: Sendable, Equatable {
     // MARK: Messages
 
     public enum Message {
-        public static let appDidNotOpen = "KVoice didn't open. Tap to try again."
-        public static let appDidNotRespond = "KVoice didn't respond. Tap to try again."
-        public static let stopNotAnswered = "KVoice isn't responding. Open KVoice to finish."
-        public static let noSpeech = "No speech detected."
-        public static let failed = "Dictation failed."
+        public static let appDidNotOpen = "KVoice 沒有開啟。點一下再試一次。"
+        public static let appDidNotRespond = "KVoice 沒有回應。點一下再試一次。"
+        public static let stopNotAnswered = "KVoice 沒有回應。請開啟 KVoice 完成。"
+        public static let noSpeech = "沒有偵測到語音。"
+        public static let failed = "聽寫失敗。"
     }
 
     // MARK: State

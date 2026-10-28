@@ -79,7 +79,7 @@ extension Mode {
 
     public static let dictation = Mode(
         id: BuiltInID.dictation,
-        name: "Dictation",
+        name: "聽寫",
         icon: "mic",
         instructions: "",
         kind: .plainDictation,
@@ -88,7 +88,7 @@ extension Mode {
 
     public static let cleanUp = Mode(
         id: BuiltInID.cleanUp,
-        name: "Clean up",
+        name: "整理贅詞",
         icon: "sparkles",
         instructions: """
         Clean up the dictated text. Remove filler words, stutters, false starts and \
@@ -104,7 +104,7 @@ extension Mode {
 
     public static let message = Mode(
         id: BuiltInID.message,
-        name: "Message",
+        name: "訊息",
         icon: "message",
         instructions: """
         Turn the dictated text into a short, natural chat message. Clean up filler \
@@ -117,7 +117,7 @@ extension Mode {
 
     public static let email = Mode(
         id: BuiltInID.email,
-        name: "Email",
+        name: "電子郵件",
         icon: "envelope",
         instructions: """
         Turn the dictated text into a well-written email body. Add a greeting and a \
@@ -131,7 +131,7 @@ extension Mode {
 
     public static let notes = Mode(
         id: BuiltInID.notes,
-        name: "Notes",
+        name: "筆記",
         icon: "list.bullet",
         instructions: """
         Turn the dictated text into concise notes: a bulleted list using "- " with \
@@ -144,7 +144,7 @@ extension Mode {
 
     public static let summary = Mode(
         id: BuiltInID.summary,
-        name: "Summary",
+        name: "摘要",
         icon: "text.append",
         instructions: """
         Summarize the dictated text in a few clear sentences that keep the key \
@@ -157,7 +157,7 @@ extension Mode {
 
     public static let translateToEnglish = Mode(
         id: BuiltInID.translateToEnglish,
-        name: "Translate to English",
+        name: "翻成英文",
         icon: "globe",
         instructions: """
         Translate the dictated text into fluent, natural English. Remove filler \

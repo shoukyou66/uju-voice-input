@@ -14,8 +14,8 @@ public final class ModeStore {
 
         public var errorDescription: String? {
             switch self {
-            case .notFound: "That mode no longer exists."
-            case .emptyName: "A mode needs a name."
+            case .notFound: "這個模式已不存在。"
+            case .emptyName: "模式需要有名稱。"
             }
         }
     }

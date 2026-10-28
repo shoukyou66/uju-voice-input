@@ -9,16 +9,16 @@ struct RootView: View {
         @Bindable var model = model
         @Bindable var handoff = model.handoff
         TabView(selection: $model.selectedTab) {
-            Tab("Dictate", systemImage: "waveform", value: AppTab.home) {
+            Tab("聽寫", systemImage: "waveform", value: AppTab.home) {
                 HomeView()
             }
-            Tab("Modes", systemImage: "square.stack.3d.up", value: AppTab.modes) {
+            Tab("模式", systemImage: "square.stack.3d.up", value: AppTab.modes) {
                 ModesView()
             }
-            Tab("History", systemImage: "clock.arrow.circlepath", value: AppTab.history) {
+            Tab("歷史紀錄", systemImage: "clock.arrow.circlepath", value: AppTab.history) {
                 HistoryView()
             }
-            Tab("Settings", systemImage: "gearshape", value: AppTab.settings) {
+            Tab("設定", systemImage: "gearshape", value: AppTab.settings) {
                 SettingsView()
             }
         }

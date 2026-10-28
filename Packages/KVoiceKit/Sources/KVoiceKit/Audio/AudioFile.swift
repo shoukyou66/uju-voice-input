@@ -89,7 +89,7 @@ public enum AudioFile {
                 commonFormat: .pcmFormatFloat32, interleaved: false
             )
         } catch {
-            throw TranscriptionError.failed("The recording could not be saved: \(error.localizedDescription)")
+            throw TranscriptionError.failed("錄音無法儲存：\(error.localizedDescription)")
         }
 
         let chunk: AVAudioFrameCount = 16_384
@@ -113,7 +113,7 @@ public enum AudioFile {
                 do {
                     try output.write(from: buffer)
                 } catch {
-                    throw TranscriptionError.failed("The recording could not be saved: \(error.localizedDescription)")
+                    throw TranscriptionError.failed("錄音無法儲存：\(error.localizedDescription)")
                 }
                 frames += AVAudioFramePosition(buffer.frameLength)
             }

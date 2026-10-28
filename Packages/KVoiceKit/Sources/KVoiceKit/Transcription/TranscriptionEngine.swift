@@ -61,14 +61,14 @@ public enum TranscriptionError: Error, Equatable, Sendable, LocalizedError {
 
     public var errorDescription: String? {
         switch self {
-        case .noSpeech: "No speech was detected."
-        case .unreadableAudio: "The recording could not be read."
-        case .unsupportedLanguage(let language): "Speech recognition does not support \(language) on this device."
+        case .noSpeech: "沒有偵測到語音。"
+        case .unreadableAudio: "無法讀取這段錄音。"
+        case .unsupportedLanguage(let language): "這部裝置的語音辨識不支援 \(language)。"
         case .engineUnavailable(let reason): reason
         case .modelNotInstalled(let name): "Download the \(name) model in Settings first."
-        case .assetsNotInstalled: "The speech recognition model for this language is not installed yet."
+        case .assetsNotInstalled: "這個語言的語音辨識模型尚未安裝。"
         case .audioTooLong(let minutes): "This recording is too long for this engine (about \(minutes) minutes at most). Record a shorter clip or choose another engine."
-        case .failed(let reason): "Transcription failed: \(reason)"
+        case .failed(let reason): "轉錄失敗：\(reason)"
         }
     }
 }
@@ -116,7 +116,7 @@ public final class TranscriptionEngineFactory: TranscriptionEngineProviding {
             let configuration = selection.cloud ?? CloudTranscriptionConfiguration(provider: .openAI)
             guard let api = configuration.provider.transcriptionAPI else {
                 throw TranscriptionError.engineUnavailable(
-                    "\(configuration.provider.displayName) does not offer transcription. Choose another provider in Settings."
+                    "\(configuration.provider.displayName) 不提供轉錄功能。請到「設定」選擇其他供應商。"
                 )
             }
             guard let key = try secrets.apiKey(for: configuration.provider), !key.isEmpty else {

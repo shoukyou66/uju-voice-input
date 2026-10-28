@@ -243,7 +243,7 @@ final class AppModel {
     private func handleAudioLoss(cause: String) {
         DiagnosticsLog.shared.append(category: "audio", "loss \(cause) \(handoff.stateSummary)")
         if pipeline.isRecording, !InterruptionSalvage.shouldProcess(recordedDuration: pipeline.recordedDuration) {
-            notice = "Recording was interrupted."
+            notice = "錄音被中斷了。"
         }
         handoff.audioInterrupted()
     }

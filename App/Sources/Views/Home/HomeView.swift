@@ -33,10 +33,10 @@ struct HomeView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Toggle(isOn: $autoCopy) {
-                        Label("Auto-copy", systemImage: autoCopy ? "doc.on.clipboard.fill" : "doc.on.clipboard")
+                        Label("自動拷貝", systemImage: autoCopy ? "doc.on.clipboard.fill" : "doc.on.clipboard")
                     }
                     .toggleStyle(.button)
-                    .accessibilityHint("Copy each result to the clipboard automatically")
+                    .accessibilityHint("自動把每次的結果拷貝到剪貼簿")
                 }
             }
             .onChange(of: model.pipeline.level) { _, level in
@@ -46,8 +46,8 @@ struct HomeView: View {
             .onChange(of: model.isRecording) { _, recording in
                 if !recording { withAnimation(.smooth) { levels = WaveformView.silentLevels } }
             }
-            .alert("Re-run failed", isPresented: Binding(get: { rerunError != nil }, set: { if !$0 { rerunError = nil } })) {
-                Button("OK", role: .cancel) {}
+            .alert("重新執行失敗", isPresented: Binding(get: { rerunError != nil }, set: { if !$0 { rerunError = nil } })) {
+                Button("好", role: .cancel) {}
             } message: {
                 Text(rerunError ?? "")
             }
@@ -72,7 +72,7 @@ struct HomeView: View {
                 .frame(minHeight: 44, alignment: .top)
 
             if model.pipeline.isBusy {
-                Button("Cancel", role: .cancel) { model.cancelDictation() }
+                Button("取消", role: .cancel) { model.cancelDictation() }
                     .buttonStyle(.glass)
             }
         }
@@ -106,27 +106,27 @@ struct PhaseStatus: View {
                     VStack(spacing: 8) {
                         Label(DictationActivity.Message.shortcutRecordingApp, systemImage: "button.vertical.right.press")
                             .foregroundStyle(.orange)
-                        Button("Not recording? Reset") { model.handoff.resetShortcut() }
+                        Button("沒在錄音？重設") { model.handoff.resetShortcut() }
                             .font(.footnote)
                     }
                 } else if let notice = model.notice {
                     Label(notice, systemImage: "exclamationmark.triangle")
                         .foregroundStyle(.orange)
                 } else {
-                    Text("Hold to talk, or tap to start and tap again to finish.")
+                    Text("按住說話，或點一下開始、再點一下結束。")
                         .foregroundStyle(.secondary)
                 }
             case .recording:
-                Label("Listening in \(model.pipeline.recordingMode?.name ?? model.modes.activeMode.name)",
+                Label("聆聽中 · \(model.pipeline.recordingMode?.name ?? model.modes.activeMode.name)",
                       systemImage: "waveform")
                     .foregroundStyle(.red)
                     .symbolEffect(.variableColor.iterative, options: .repeating)
             case .transcribing:
-                HStack(spacing: 8) { ProgressView(); Text("Transcribing…") }
+                HStack(spacing: 8) { ProgressView(); Text("轉錄中…") }
             case .formatting:
-                HStack(spacing: 8) { ProgressView(); Text("Formatting…") }
+                HStack(spacing: 8) { ProgressView(); Text("整理中…") }
             case .done:
-                Label(autoCopy ? "Done · copied to the clipboard" : "Done", systemImage: "checkmark.circle.fill")
+                Label(autoCopy ? "完成 · 已拷貝到剪貼簿" : "完成", systemImage: "checkmark.circle.fill")
                     .foregroundStyle(.green)
             case .failed(let error):
                 Label(error.localizedDescription, systemImage: "exclamationmark.triangle.fill")

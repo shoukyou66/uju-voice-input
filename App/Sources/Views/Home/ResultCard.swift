@@ -23,7 +23,7 @@ struct ResultCard: View {
             }
 
             if let error = result.formattingError {
-                Label("AI formatting failed, showing the transcript. \(error.localizedDescription)",
+                Label("AI 整理失敗，已顯示逐字稿。\(error.localizedDescription)",
                       systemImage: "exclamationmark.triangle")
                     .font(.footnote)
                     .foregroundStyle(.orange)
@@ -44,12 +44,12 @@ struct ResultCard: View {
                     UIPasteboard.general.string = result.text
                     copied = true
                 } label: {
-                    Label(copied ? "Copied" : "Copy", systemImage: copied ? "checkmark" : "doc.on.doc")
+                    Label(copied ? "已拷貝" : "拷貝", systemImage: copied ? "checkmark" : "doc.on.doc")
                 }
                 .buttonStyle(.glassProminent)
 
                 ShareLink(item: result.text) {
-                    Label("Share", systemImage: "square.and.arrow.up")
+                    Label("分享", systemImage: "square.and.arrow.up")
                 }
                 .buttonStyle(.glass)
 
@@ -86,13 +86,13 @@ struct ResultCard: View {
 /// "Re-run with another mode".
 struct RerunMenu: View {
     @Environment(AppModel.self) private var model
-    var title = "Re-run"
+    var title = "重新執行"
     let disabled: Bool
     let onRerun: (Mode) -> Void
 
     var body: some View {
         Menu {
-            Section("Re-run with") {
+            Section("重新執行，使用") {
                 ForEach(model.modes.modes) { mode in
                     Button { onRerun(mode) } label: {
                         Label(mode.name, systemImage: mode.icon)

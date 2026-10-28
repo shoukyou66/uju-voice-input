@@ -9,12 +9,12 @@ enum DictationGateOutcome: String, AppEnum {
     case stoppedExisting
     case alreadyRecording
 
-    static var typeDisplayRepresentation: TypeDisplayRepresentation { "Dictation Outcome" }
+    static var typeDisplayRepresentation: TypeDisplayRepresentation { "聽寫結果" }
     static var caseDisplayRepresentations: [DictationGateOutcome: DisplayRepresentation] {
         [
-            .record: "Record",
-            .stoppedExisting: "Stopped Existing",
-            .alreadyRecording: "Already Recording"
+            .record: "錄音",
+            .stoppedExisting: "已停止原本的錄音",
+            .alreadyRecording: "已在錄音中"
         ]
     }
 
@@ -29,21 +29,21 @@ enum DictationGateOutcome: String, AppEnum {
 /// toggles: if KVoice itself is recording, it stops and finishes that
 /// dictation instead.
 struct BeginDictationIntent: AppIntent {
-    static var title: LocalizedStringResource { "Begin Dictation" }
+    static var title: LocalizedStringResource { "開始聽寫" }
     static var description: IntentDescription {
-        IntentDescription("Prepares a KVoice dictation from any app. Use it before Record Audio and Transcribe Audio; record only if the outcome is Record.")
+        IntentDescription("從任何 App 準備一次 KVoice 聽寫。請在「錄製音訊」和「轉錄音訊」之前使用；只有結果為「錄音」時才需要錄音。")
     }
     /// Background only: the shortcut keeps the current app in front (the
     /// iOS 26 replacement for `openAppWhenRun = false`).
     static var supportedModes: IntentModes { .background }
 
-    @Parameter(title: "Mode", description: "The mode for this dictation. Uses the active mode when empty.")
+    @Parameter(title: "模式", description: "這次聽寫使用的模式。留空則使用目前啟用的模式。")
     var mode: ModeEntity?
 
     init() {}
 
     static var parameterSummary: some ParameterSummary {
-        Summary("Begin dictation in \(\.$mode)")
+        Summary("用 \(\.$mode) 開始聽寫")
     }
 
     @MainActor
@@ -63,27 +63,27 @@ struct BeginDictationIntent: AppIntent {
 /// by a visible KVoice keyboard, saved in History). Continues in the
 /// foreground when the job cannot finish in the background budget.
 struct TranscribeAudioIntent: AppIntent {
-    static var title: LocalizedStringResource { "Transcribe Audio" }
+    static var title: LocalizedStringResource { "轉錄音訊" }
     static var description: IntentDescription {
-        IntentDescription("Transcribes and formats an audio recording with KVoice and returns the text. Saves it in History.")
+        IntentDescription("用 KVoice 轉錄並整理一段錄音，回傳文字，並儲存到歷史紀錄。")
     }
     /// Background, continuing in the foreground on demand: the iOS 26 form
     /// of `ForegroundContinuableIntent`.
     static var supportedModes: IntentModes { [.background, .foreground(.dynamic)] }
 
-    @Parameter(title: "Audio", description: "A recording, for example from Record Audio.", supportedContentTypes: [.audio])
+    @Parameter(title: "音訊", description: "一段錄音，例如來自「錄製音訊」。", supportedContentTypes: [.audio])
     var audio: IntentFile
 
-    @Parameter(title: "Mode", description: "Uses the active mode when empty.")
+    @Parameter(title: "模式", description: "留空則使用目前啟用的模式。")
     var mode: ModeEntity?
 
-    @Parameter(title: "Language", description: "A language code such as en-US. Uses the mode's language when empty.")
+    @Parameter(title: "語言", description: "語言代碼，例如 en-US。留空則使用模式設定的語言。")
     var language: String?
 
     init() {}
 
     static var parameterSummary: some ParameterSummary {
-        Summary("Transcribe \(\.$audio) in \(\.$mode)") {
+        Summary("用 \(\.$mode) 轉錄 \(\.$audio)") {
             \.$language
         }
     }
@@ -103,7 +103,7 @@ struct TranscribeAudioIntent: AppIntent {
             language: language?.trimmingCharacters(in: .whitespaces).nonEmpty,
             isForeground: systemContext.currentMode == .foreground,
             continueInForeground: {
-                try await continueInForeground("Finish this dictation in KVoice?", alwaysConfirm: false)
+                try await continueInForeground("要在 KVoice 結束這次聽寫嗎？", alwaysConfirm: false)
             }
         )
         return .result(value: text, dialog: IntentDialog(stringLiteral: Self.preview(text)))
@@ -117,7 +117,7 @@ struct TranscribeAudioIntent: AppIntent {
 
 extension AudioJobError: CustomLocalizedStringResourceConvertible {
     var localizedStringResource: LocalizedStringResource {
-        LocalizedStringResource(stringLiteral: errorDescription ?? "Dictation failed.")
+        LocalizedStringResource(stringLiteral: errorDescription ?? "聽寫失敗。")
     }
 }
 

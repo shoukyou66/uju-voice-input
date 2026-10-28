@@ -92,7 +92,7 @@ private struct ActionButton: View {
 private struct EndButton: View {
     var body: some View {
         Button(intent: EndDictationSessionIntent()) {
-            Label("End", systemImage: "power")
+            Label("結束", systemImage: "power")
                 .font(.subheadline.weight(.semibold))
         }
         .buttonStyle(.bordered)
@@ -107,16 +107,16 @@ private struct StageLine: View {
         switch status.stage {
         case .recording(let startedAt):
             HStack(spacing: 6) {
-                Text("Recording").font(.headline)
+                Text("錄音中").font(.headline)
                 Text(startedAt, style: .timer).font(.headline).monospacedDigit().foregroundStyle(.secondary)
             }
         case .transcribing:
-            Text("Transcribing…").font(.headline)
+            Text("轉錄中…").font(.headline)
         case .formatting:
-            Text("Formatting…").font(.headline)
+            Text("整理中…").font(.headline)
         case .done(let preview):
             VStack(alignment: .leading, spacing: 2) {
-                Text("Copied").font(.headline)
+                Text("已拷貝").font(.headline)
                 if !preview.isEmpty {
                     Text(preview).font(.caption).foregroundStyle(.secondary).lineLimit(2)
                 }
@@ -124,17 +124,17 @@ private struct StageLine: View {
         case .standby(let until, let lastPreview):
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
-                    Text("KVoice ready").font(.headline)
+                    Text("KVoice 就緒").font(.headline)
                     Text(timerInterval: Date.now...max(until, Date.now.addingTimeInterval(1)), countsDown: true)
                         .font(.headline).monospacedDigit().foregroundStyle(.secondary)
                 }
                 if let lastPreview {
-                    Text("Copied: \(lastPreview)").font(.caption).foregroundStyle(.secondary).lineLimit(2)
+                    Text("已拷貝：\(lastPreview)").font(.caption).foregroundStyle(.secondary).lineLimit(2)
                 }
             }
         case .failed(let message):
             VStack(alignment: .leading, spacing: 2) {
-                Text("Dictation failed").font(.headline)
+                Text("聽寫失敗").font(.headline)
                 Text(message).font(.caption).foregroundStyle(.secondary).lineLimit(2)
             }
         }
@@ -144,7 +144,7 @@ private struct StageLine: View {
 private struct StopButton: View {
     var body: some View {
         Button(intent: ToggleDictationIntent()) {
-            Label("Stop", systemImage: "stop.fill")
+            Label("停止", systemImage: "stop.fill")
                 .font(.subheadline.weight(.semibold))
         }
         .buttonStyle(.borderedProminent)
@@ -162,10 +162,10 @@ struct ToggleDictationControl: ControlWidget {
     var body: some ControlWidgetConfiguration {
         StaticControlConfiguration(kind: Self.kind) {
             ControlWidgetButton(action: ToggleDictationIntent()) {
-                Label("Toggle Dictation", systemImage: "waveform")
+                Label("切換聽寫", systemImage: "waveform")
             }
         }
-        .displayName("Toggle Dictation")
-        .description("Press to start dictating, press again to stop and copy the text.")
+        .displayName("切換聽寫")
+        .description("按一下開始聽寫，再按一下停止並拷貝文字。")
     }
 }

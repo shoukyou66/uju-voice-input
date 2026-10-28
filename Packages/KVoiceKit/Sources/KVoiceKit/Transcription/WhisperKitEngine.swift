@@ -154,7 +154,7 @@ public actor WhisperKitEngine {
             loaded = (model.id, box)
             return box
         } catch {
-            throw TranscriptionError.engineUnavailable("The \(model.name) model could not be loaded. Try downloading it again.")
+            throw TranscriptionError.engineUnavailable("無法載入 \(model.name) 模型。請重新下載。")
         }
     }
 

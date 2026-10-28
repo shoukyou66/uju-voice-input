@@ -23,21 +23,21 @@ struct DictateControl: ControlWidget {
     var body: some ControlWidgetConfiguration {
         StaticControlConfiguration(kind: Self.kind) {
             ControlWidgetButton(action: DictateIntent()) {
-                Label("Dictate", systemImage: "mic.fill")
+                Label("聽寫", systemImage: "mic.fill")
             }
         }
-        .displayName("Dictate with KVoice")
-        .description("Open KVoice and start recording.")
+        .displayName("用 KVoice 聽寫")
+        .description("開啟 KVoice 並開始錄音。")
     }
 }
 
 // MARK: - Home and Lock Screen widget
 
 struct DictateWidgetConfiguration: WidgetConfigurationIntent {
-    static var title: LocalizedStringResource { "Dictation Mode" }
-    static var description: IntentDescription { IntentDescription("The mode the widget dictates in.") }
+    static var title: LocalizedStringResource { "聽寫模式" }
+    static var description: IntentDescription { IntentDescription("小工具聽寫時使用的模式。") }
 
-    @Parameter(title: "Mode", description: "Leave empty to use the active mode.")
+    @Parameter(title: "模式", description: "留空則使用目前啟用的模式。")
     var mode: ModeEntity?
 
     init() {}
@@ -53,7 +53,7 @@ struct DictateEntry: TimelineEntry {
 
 struct DictateProvider: AppIntentTimelineProvider {
     func placeholder(in context: Context) -> DictateEntry {
-        DictateEntry(date: .now, modeName: "Dictation", icon: "mic", modeID: nil)
+        DictateEntry(date: .now, modeName: "聽寫", icon: "mic", modeID: nil)
     }
 
     func snapshot(for configuration: DictateWidgetConfiguration, in context: Context) async -> DictateEntry {
@@ -80,8 +80,8 @@ struct DictateWidget: Widget {
         AppIntentConfiguration(kind: Self.kind, intent: DictateWidgetConfiguration.self, provider: DictateProvider()) { entry in
             DictateWidgetView(entry: entry)
         }
-        .configurationDisplayName("Dictate")
-        .description("Start a KVoice dictation with one tap.")
+        .configurationDisplayName("聽寫")
+        .description("一點就開始 KVoice 聽寫。")
         .supportedFamilies([.systemSmall, .accessoryCircular, .accessoryRectangular])
     }
 }
@@ -104,12 +104,12 @@ struct DictateWidgetView: View {
                 Image(systemName: "mic.fill").font(.title2.weight(.semibold))
             }
             .containerBackground(for: .widget) {}
-            .accessibilityLabel("Dictate with KVoice")
+            .accessibilityLabel("用 KVoice 聽寫")
         case .accessoryRectangular:
             HStack(spacing: 8) {
                 Image(systemName: "mic.fill").font(.title3.weight(.semibold))
                 VStack(alignment: .leading) {
-                    Text("Dictate").font(.headline)
+                    Text("聽寫").font(.headline)
                     Text(entry.modeName).font(.caption).lineLimit(1)
                 }
             }
@@ -123,7 +123,7 @@ struct DictateWidgetView: View {
                     .frame(width: 56, height: 56)
                     .background(.white.opacity(0.22), in: .circle)
                 Spacer()
-                Text("Dictate")
+                Text("聽寫")
                     .font(.headline)
                     .foregroundStyle(.white)
                 Label(entry.modeName, systemImage: entry.icon)

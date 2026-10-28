@@ -44,7 +44,7 @@ struct RecordButton: View {
         .gesture(pressGesture, isEnabled: !isBusy)
         .sensoryFeedback(.impact(weight: .medium), trigger: isRecording)
         .accessibilityElement()
-        .accessibilityLabel(isRecording ? "Stop dictation" : "Start dictation")
+        .accessibilityLabel(isRecording ? "停止聽寫" : "開始聽寫")
         .accessibilityAddTraits(.isButton)
         .accessibilityAction {
             isRecording ? onStop() : onStart()

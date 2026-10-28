@@ -2,19 +2,20 @@ import KVoiceCore
 import SwiftUI
 import UIKit
 
-/// The KVoice keyboard: mode chips, a large mic button with its status,
-/// and a row of basic editing keys.
+/// The KVoice keyboard: a large mic button with its status, mode chips
+/// under it, and a row of basic editing keys. The chips stay off the top
+/// edge, which the host app's own bars can draw over.
 struct KeyboardView: View {
     let model: KeyboardModel
 
     var body: some View {
         VStack(spacing: 0) {
             if model.hasFullAccess {
-                KeyboardModeBar(model: model)
-                    .padding(.top, 8)
-                Spacer(minLength: 4)
+                Spacer(minLength: 12)
                 KeyboardDictationPanel(model: model)
                 Spacer(minLength: 4)
+                KeyboardModeBar(model: model)
+                    .padding(.bottom, 6)
             } else {
                 KeyboardFullAccessExplainer()
                     .padding(.top, 10)
@@ -65,7 +66,7 @@ private struct KeyboardModeBar: View {
                 .background(isActive ? Color.accentColor : KeyboardColors.functionKey, in: .capsule)
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("\(mode.name) mode")
+        .accessibilityLabel("\(mode.name) 模式")
         .accessibilityAddTraits(isActive ? .isSelected : [])
     }
 }
@@ -80,7 +81,7 @@ private struct KeyboardDictationPanel: View {
             HStack {
                 sideSlot {
                     if model.phase.isActive {
-                        KeyboardPillButton(title: "Cancel", systemImage: "xmark", action: model.cancelTapped)
+                        KeyboardPillButton(title: "取消", systemImage: "xmark", action: model.cancelTapped)
                     }
                 }
                 Spacer(minLength: 8)
@@ -88,7 +89,7 @@ private struct KeyboardDictationPanel: View {
                 Spacer(minLength: 8)
                 sideSlot {
                     if model.canUndo && !model.phase.isActive {
-                        KeyboardPillButton(title: "Undo", systemImage: "arrow.uturn.backward", action: model.undoTapped)
+                        KeyboardPillButton(title: "復原", systemImage: "arrow.uturn.backward", action: model.undoTapped)
                     } else if model.dictation.showsEndSession {
                         Button(action: model.endSessionTapped) {
                             Image(systemName: "power")
@@ -98,7 +99,7 @@ private struct KeyboardDictationPanel: View {
                                 .background(KeyboardColors.functionKey, in: .circle)
                         }
                         .buttonStyle(KeyboardPressStyle())
-                        .accessibilityLabel("End KVoice session")
+                        .accessibilityLabel("結束 KVoice 聆聽")
                     }
                 }
             }
@@ -106,7 +107,7 @@ private struct KeyboardDictationPanel: View {
             KeyboardStatusLine(phase: model.phase, external: model.dictation.external, modeName: model.activeMode?.name)
             if model.showsActionButtonTip {
                 HStack(spacing: 4) {
-                    Text("Tip: press the Action Button to dictate without leaving this app")
+                    Text("小提醒：按動作按鈕即可不離開這個 App 直接聽寫")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
@@ -116,7 +117,7 @@ private struct KeyboardDictationPanel: View {
                             .frame(width: 24, height: 24)
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel("Dismiss tip")
+                    .accessibilityLabel("關閉提醒")
                 }
                 .padding(.horizontal, 16)
             }
@@ -184,7 +185,7 @@ private struct KeyboardMicButton: View {
         }
         .buttonStyle(KeyboardPressStyle())
         .disabled(isProcessing || isBlocked)
-        .accessibilityLabel(isRecording ? "Finish dictation" : "Dictate")
+        .accessibilityLabel(isRecording ? "Finish dictation" : "聽寫")
         .onChange(of: isRecording, initial: true) { _, recording in
             pulse = false
             guard recording else { return }
@@ -234,21 +235,21 @@ private struct KeyboardStatusLine: View {
         if !phase.isActive {
             switch external {
             case .blocked(let message): return message
-            case .appRecording: return "Recording in KVoice… tap to finish"
+            case .appRecording: return "在 KVoice 錄音中…點一下結束"
             case .none: break
             }
         }
         return switch phase {
         case .idle:
-            if let modeName { "Ready · \(modeName)" } else { "Ready" }
-        case .waitingForApp(_, .openedApp, _): "Opening KVoice…"
-        case .waitingForApp(_, .command, _): "Starting…"
-        case .recording: "Recording… tap to finish"
-        case .stopping, .transcribing: "Transcribing…"
-        case .formatting: "Formatting…"
-        case .inserted: "Inserted"
+            if let modeName { "就緒 · \(modeName)" } else { "就緒" }
+        case .waitingForApp(_, .openedApp, _): "開啟 KVoice 中…"
+        case .waitingForApp(_, .command, _): "啟動中…"
+        case .recording: "錄音中…點一下結束"
+        case .stopping, .transcribing: "轉錄中…"
+        case .formatting: "整理中…"
+        case .inserted: "已填入"
         case .failed(let message): message
-        case .cancelled: "Cancelled"
+        case .cancelled: "已取消"
         }
     }
 }
@@ -277,16 +278,16 @@ private struct KeyboardPillButton: View {
 private struct KeyboardFullAccessExplainer: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Label("Allow Full Access to dictate", systemImage: "lock.open")
+            Label("請允許「完整取用」才能聽寫", systemImage: "lock.open")
                 .font(.headline)
-            Text("KVoice records in the app and types the text here. The keyboard needs Full Access to share it with the app. What you type is never stored or sent.")
+            Text("KVoice 在 App 裡錄音，再把文字輸入到這裡。鍵盤需要「完整取用」才能與 App 分享。你輸入的內容絕不會被儲存或傳送。")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
             VStack(alignment: .leading, spacing: 2) {
-                step(1, "Open Settings › General › Keyboard › Keyboards")
-                step(2, "Tap KVoice and turn on Allow Full Access")
-                step(3, "Come back here and tap the mic")
+                step(1, "開啟「設定」›「一般」›「鍵盤」›「鍵盤」")
+                step(2, "點 KVoice，並開啟「允許完整取用」")
+                step(3, "回到這裡並點麥克風")
             }
             .font(.footnote)
         }
@@ -315,19 +316,19 @@ private struct KeyboardBottomRow: View {
                     .frame(width: 46)
             }
             KeyboardKey(background: KeyboardColors.letterKey, action: model.insertSpace) {
-                Text("space").font(.callout)
+                Text("空白").font(.callout)
             }
-            .accessibilityLabel("Space")
+            .accessibilityLabel("空白")
             KeyboardRepeatingKey(action: model.deleteBackward) {
                 Image(systemName: "delete.left").font(.system(size: 18))
             }
             .frame(width: 58)
-            .accessibilityLabel("Delete")
+            .accessibilityLabel("刪除")
             KeyboardKey(background: KeyboardColors.functionKey, action: model.insertReturn) {
                 returnLabel
             }
             .frame(width: 88)
-            .accessibilityLabel("Return")
+            .accessibilityLabel("換行")
         }
         .frame(height: 44)
     }
@@ -420,7 +421,7 @@ private struct KeyboardGlobeKey: View {
             Image(systemName: "globe").font(.system(size: 18))
         }
         .overlay { KeyboardInputModeButton(model: model) }
-        .accessibilityLabel("Next keyboard")
+        .accessibilityLabel("下一個鍵盤")
     }
 }
 

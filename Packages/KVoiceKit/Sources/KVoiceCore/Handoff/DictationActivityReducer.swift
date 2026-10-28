@@ -22,9 +22,9 @@ public struct DictationActivityReducer: Sendable, Equatable {
         /// The short dialog shown with the outcome.
         public var dialog: String {
             switch self {
-            case .record: "Recording. Tap Stop when you're done."
-            case .stoppedExisting: "Stopped. KVoice is finishing your dictation."
-            case .alreadyRecording: "Already recording with the Action Button. Tap Stop in the recording panel."
+            case .record: "錄音中。說完請點「停止」。"
+            case .stoppedExisting: "已停止。KVoice 正在完成你的聽寫。"
+            case .alreadyRecording: "已在用動作按鈕錄音。請點錄音面板中的「停止」。"
             }
         }
     }
@@ -40,7 +40,7 @@ public struct DictationActivityReducer: Sendable, Equatable {
         public var message: String {
             switch self {
             case .shortcutOwnsMic: DictationActivity.Message.shortcutRecordingApp
-            case .alreadyRecording: "KVoice is already recording."
+            case .alreadyRecording: "KVoice 已經在錄音。"
             case .busy: DictationActivity.Message.busy
             }
         }

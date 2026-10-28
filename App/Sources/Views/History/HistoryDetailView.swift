@@ -25,9 +25,9 @@ struct HistoryDetailView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 if hasDistinctRaw {
-                    Picker("Version", selection: $showsRaw) {
-                        Text("Formatted").tag(false)
-                        Text("Transcript").tag(true)
+                    Picker("版本", selection: $showsRaw) {
+                        Text("整理後").tag(false)
+                        Text("逐字稿").tag(true)
                     }
                     .pickerStyle(.segmented)
                 }
@@ -56,13 +56,13 @@ struct HistoryDetailView: View {
                     UIPasteboard.general.string = text
                     copied = true
                 } label: {
-                    Label(copied ? "Copied" : "Copy", systemImage: copied ? "checkmark" : "doc.on.doc")
+                    Label(copied ? "已拷貝" : "拷貝", systemImage: copied ? "checkmark" : "doc.on.doc")
                 }
                 ShareLink(item: text)
                 Spacer()
                 rerunMenu
                 Spacer()
-                Button("Delete", systemImage: "trash", role: .destructive) { confirmingDelete = true }
+                Button("刪除", systemImage: "trash", role: .destructive) { confirmingDelete = true }
             }
         }
         .onDisappear { player.stop() }
@@ -71,8 +71,8 @@ struct HistoryDetailView: View {
             try? await Task.sleep(for: .seconds(2))
             copied = false
         }
-        .confirmationDialog("Delete this dictation?", isPresented: $confirmingDelete, titleVisibility: .visible) {
-            Button("Delete", role: .destructive) {
+        .confirmationDialog("要刪除這則聽寫嗎？", isPresented: $confirmingDelete, titleVisibility: .visible) {
+            Button("刪除", role: .destructive) {
                 Task {
                     player.stop()
                     try? await model.history?.delete(id: record.id)
@@ -81,8 +81,8 @@ struct HistoryDetailView: View {
                 }
             }
         }
-        .alert("Re-run failed", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
-            Button("OK", role: .cancel) {}
+        .alert("重新執行失敗", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
+            Button("好", role: .cancel) {}
         } message: {
             Text(errorMessage ?? "")
         }
@@ -90,31 +90,31 @@ struct HistoryDetailView: View {
 
     private var rerunMenu: some View {
         Menu {
-            Section("Reformat the transcript with") {
+            Section("用以下方式重新整理逐字稿") {
                 ForEach(model.modes.modes) { mode in
                     Button { rerun(mode, preferAudio: false) } label: { Label(mode.name, systemImage: mode.icon) }
                 }
             }
             if audioURL != nil {
-                Section("Transcribe the audio again with") {
+                Section("用以下引擎重新轉錄音訊") {
                     ForEach(model.modes.modes) { mode in
                         Button { rerun(mode, preferAudio: true) } label: { Label(mode.name, systemImage: mode.icon) }
                     }
                 }
             }
         } label: {
-            Label("Re-run", systemImage: "arrow.trianglehead.2.clockwise")
+            Label("重新執行", systemImage: "arrow.trianglehead.2.clockwise")
         }
         .disabled(isRerunning || model.pipeline.isBusy)
     }
 
     private var details: some View {
         VStack(spacing: 0) {
-            DetailRow(title: "Date", value: record.date.formatted(date: .abbreviated, time: .shortened))
-            DetailRow(title: "Length", value: Duration.seconds(record.duration).formatted(.time(pattern: .minuteSecond)))
-            DetailRow(title: "Engine", value: record.engine)
+            DetailRow(title: "日期", value: record.date.formatted(date: .abbreviated, time: .shortened))
+            DetailRow(title: "長度", value: Duration.seconds(record.duration).formatted(.time(pattern: .minuteSecond)))
+            DetailRow(title: "引擎", value: record.engine)
             if let provider = record.provider { DetailRow(title: "AI", value: provider) }
-            DetailRow(title: "Audio", value: audioURL == nil ? "Not kept" : "Kept on this device")
+            DetailRow(title: "音訊", value: audioURL == nil ? "未保留" : "保留在此裝置上")
         }
         .font(.callout)
         .padding(.horizontal, 18)

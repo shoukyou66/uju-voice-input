@@ -17,9 +17,9 @@ public enum KeychainError: Error, Equatable, LocalizedError {
         switch self {
         case .unexpectedStatus(let status):
             let message = SecCopyErrorMessageString(status, nil) as String? ?? "status \(status)"
-            return "Keychain error: \(message)"
+            return "鑰匙圈錯誤：\(message)"
         case .invalidData:
-            return "The Keychain item could not be read."
+            return "無法讀取鑰匙圈項目。"
         }
     }
 }

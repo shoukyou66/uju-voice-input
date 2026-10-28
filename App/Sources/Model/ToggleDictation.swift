@@ -81,10 +81,10 @@ extension AppModel {
             if hasLiveActivity { liveActivity.end(sessionID: sessionID) }
             Self.log.append(category: "intent", "fallback.foreground")
             do {
-                try await continueInForeground("Start dictating in KVoice?")
+                try await continueInForeground("要在 KVoice 開始聽寫嗎？")
             } catch {
                 Self.log.append(category: "intent", "fallback.declined")
-                throw AudioJobError.failed("Dictation did not start. Open KVoice to try again.")
+                throw AudioJobError.failed("聽寫沒有開始。請開啟 KVoice 再試一次。")
             }
             sessionID = UUID()
             hasLiveActivity = liveActivity.start(
@@ -101,14 +101,14 @@ extension AppModel {
         }
 
         guard hasLiveActivity else {
-            throw AudioJobError.failed("Turn on Live Activities for KVoice in Settings to dictate with the Action Button.")
+            throw AudioJobError.failed("請到「設定」開啟 KVoice 的「即時動態」，才能用動作按鈕聽寫。")
         }
         guard started else {
             liveActivity.end(sessionID: sessionID)
             if case .failed(let error) = pipeline.phase {
                 throw AudioJobError.failed(error.localizedDescription)
             }
-            throw AudioJobError.failed(rejection ?? "Dictation did not start.")
+            throw AudioJobError.failed(rejection ?? "聽寫沒有開始。")
         }
 
         // 4. `holdUntilStopped` keeps `perform` running while the recording
@@ -160,11 +160,11 @@ extension AppModel {
             // Apple Speech to fit the budget also finishes in the foreground.
             if plan != .runSelected {
                 do {
-                    try await continueInForeground("Finish this dictation in KVoice?")
+                    try await continueInForeground("要在 KVoice 結束這次聽寫嗎？")
                 } catch {
                     // The recording keeps running; press again to retry.
                     Self.log.append(category: "intent", "stop.declined")
-                    throw AudioJobError.failed("Still recording. Press again, or open KVoice to finish.")
+                    throw AudioJobError.failed("還在錄音中。再按一次，或開啟 KVoice 來結束。")
                 }
             }
         }

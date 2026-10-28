@@ -14,20 +14,20 @@ public struct WhisperModel: Sendable, Hashable, Identifiable, Codable {
 
     public static let tiny = WhisperModel(
         id: "tiny", name: "Tiny", variant: "openai_whisper-tiny",
-        approximateSizeMB: 75, summary: "Fastest, lowest accuracy."
+        approximateSizeMB: 75, summary: "最快，準確度最低。"
     )
     public static let base = WhisperModel(
         id: "base", name: "Base", variant: "openai_whisper-base",
-        approximateSizeMB: 145, summary: "Fast, good for short dictation."
+        approximateSizeMB: 145, summary: "速度快，適合短句聽寫。"
     )
     public static let small = WhisperModel(
         id: "small", name: "Small", variant: "openai_whisper-small",
-        approximateSizeMB: 480, summary: "Balanced speed and accuracy."
+        approximateSizeMB: 480, summary: "速度與準確度均衡。"
     )
     public static let largeV3Turbo = WhisperModel(
         id: "large-v3-turbo", name: "Large v3 Turbo",
         variant: "openai_whisper-large-v3-v20240930_turbo_632MB",
-        approximateSizeMB: 632, summary: "Most accurate. Needs a recent iPhone (A16 or newer)."
+        approximateSizeMB: 632, summary: "準確度最高。需要較新的 iPhone（A16 或更新）。"
     )
 
     public static let all: [WhisperModel] = [.tiny, .base, .small, .largeV3Turbo]

@@ -25,11 +25,11 @@ public enum RecordingError: Error, Equatable, Sendable, LocalizedError {
 
     public var errorDescription: String? {
         switch self {
-        case .permissionDenied: "KVoice needs microphone access. Turn it on in Settings."
-        case .alreadyRecording: "A recording is already in progress."
-        case .notRecording: "Nothing is being recorded."
-        case .noInputDevice: "No microphone is available."
-        case .failed(let reason): "Recording failed: \(reason)"
+        case .permissionDenied: "KVoice 需要麥克風權限。請到「設定」開啟。"
+        case .alreadyRecording: "已經有錄音正在進行。"
+        case .notRecording: "目前沒有在錄音。"
+        case .noInputDevice: "找不到可用的麥克風。"
+        case .failed(let reason): "錄音失敗：\(reason)"
         }
     }
 }

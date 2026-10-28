@@ -63,7 +63,7 @@ final class HandoffCoordinator {
 
     func appWillTerminate() {
         if let sessionID, model.pipeline.isBusy {
-            write(HandoffResult(sessionID: sessionID, status: .failed, errorMessage: "KVoice was closed."))
+            write(HandoffResult(sessionID: sessionID, status: .failed, errorMessage: "KVoice 已關閉。"))
         }
         // Same as the next launch: nothing this process owned survives.
         send(.launched(now: .now))
@@ -249,7 +249,7 @@ final class HandoffCoordinator {
             guard let request = mailbox.readRequest(), request.sessionID == session, !request.isExpired() else {
                 write(HandoffResult(
                     sessionID: session, status: .failed,
-                    errorMessage: "That dictation request expired. Try again from the keyboard."
+                    errorMessage: "這次聽寫要求已過期。請從鍵盤再試一次。"
                 ))
                 return true
             }

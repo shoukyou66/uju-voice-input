@@ -40,7 +40,7 @@ import Testing
         }
         var machine = KeyboardDictation()
         _ = machine.handle(.activityChanged(shared, now: at(1)))
-        #expect(machine.external == .blocked("Formatting…"))
+        #expect(machine.external == .blocked("整理中…"))
         #expect(machine.handle(.micTapped(newSessionID: UUID(), modeID: mode, appAcceptsCommands: true, now: at(1))).isEmpty)
     }
 
