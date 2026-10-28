@@ -1,0 +1,43 @@
+name: Sideload IPA
+
+# Builds KVoice.ipa for SideStore / AltStore (free Apple ID, no team or
+# secrets needed) and keeps it as a workflow artifact.
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'Docs/**'
+  workflow_dispatch:
+
+concurrency:
+  group: sideload-ipa
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  XCODE_APP: ${{ vars.CI_XCODE_APP || '/Applications/Xcode_27.0.app' }}
+
+jobs:
+  ipa:
+    name: Build sideload IPA
+    runs-on: ${{ vars.CI_MACOS_RUNNER || 'xcode-27' }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - name: Select Xcode
+        run: Scripts/ci/select-xcode.sh
+      - name: Generate project
+        run: |
+          command -v xcodegen >/dev/null || brew install xcodegen
+          Scripts/generate.sh
+      - name: Build IPA
+        run: Scripts/ci/build-sideload-ipa.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: KVoice-ipa
+          path: build/KVoice.ipa
+          retention-days: 30
