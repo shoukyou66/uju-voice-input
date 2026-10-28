@@ -52,13 +52,13 @@ import Testing
     @Test func activeModeIsSharedThroughDefaults() throws {
         defer { directory.cleanUp(); defaults.cleanUp() }
         let app = makeStore()
-        try app.setActiveMode(id: Mode.BuiltInID.email)
+        try app.setActiveMode(id: Mode.BuiltInID.message)
         let keyboard = makeStore()
-        #expect(keyboard.activeMode.id == Mode.BuiltInID.email)
+        #expect(keyboard.activeMode.id == Mode.BuiltInID.message)
 
-        try app.setActiveMode(id: Mode.BuiltInID.notes)
+        try app.setActiveMode(id: Mode.BuiltInID.summary)
         keyboard.reload()
-        #expect(keyboard.activeMode.id == Mode.BuiltInID.notes)
+        #expect(keyboard.activeMode.id == Mode.BuiltInID.summary)
     }
 
     @Test func deletingActiveModeFallsBackToFirst() throws {

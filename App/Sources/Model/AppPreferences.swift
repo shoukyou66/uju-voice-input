@@ -21,7 +21,7 @@ enum AppPreferences {
         store.object(forKey: keepAliveMinutesKey) as? Int ?? 5
     }
 
-    static let keepAliveChoices = [0, 1, 5, 10, 15]
+    static let keepAliveChoices = [0, 1, 5, 10, 15, 30, 60]
 
     /// UI-test and screenshot hooks: `-kvoiceSkipOnboarding`, `-kvoiceTab <name>`,
     /// `-kvoiceOpenURL <url>`.

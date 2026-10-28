@@ -48,11 +48,12 @@ import Testing
 
     @Test func builtInModesAreCompleteAndStable() {
         #expect(Mode.builtIns.map(\.name) == [
-            "聽寫", "整理贅詞", "訊息", "電子郵件", "筆記", "摘要", "翻成英文"
+            "Smart", "口語聊天", "專注摘要"
         ])
         #expect(Mode.dictation.kind == .plainDictation)
         #expect(Mode.builtIns.dropFirst().allSatisfy { $0.kind == .aiFormat && !$0.instructions.isEmpty })
         #expect(Set(Mode.builtIns.map(\.id)).count == Mode.builtIns.count)
+        #expect(Mode.builtIns.dropFirst().allSatisfy { $0.providerOverride == .geminiFormatting })
         #expect(Mode.translateToEnglish.translateToEnglish)
     }
 }
