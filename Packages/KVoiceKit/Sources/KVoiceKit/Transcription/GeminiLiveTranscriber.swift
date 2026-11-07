@@ -23,6 +23,11 @@ public final class GeminiLiveTranscriber: Sendable {
     /// After the end of the stream, how long to wait for speech Google has
     /// not reported yet when the local level says the tail had voice.
     static let tailGrace: Duration = .seconds(1)
+    /// After the end of the stream, how long Google may keep reporting speech
+    /// before the WAV file is transcribed instead.
+    static let speakingGrace: Duration = .seconds(5)
+    /// How long the connection may take before the WAV file is used.
+    static let connectTimeout: Duration = .seconds(4)
 
     struct State {
         var finals: [String] = []
@@ -31,7 +36,10 @@ public final class GeminiLiveTranscriber: Sendable {
         /// Seconds into the stream where Google last reported the end of speech.
         var lastEndOffset = 0.0
         var failure: String?
-        var endSent = false
+        /// Google accepted the setup.
+        var ready = false
+        /// When `audioStreamEnd` went out (after all queued audio).
+        var endSentAt: ContinuousClock.Instant?
         var closed = false
         // Local voice detection on the audio sent, to know whether the tail
         // could still hold speech Google has not reported.
@@ -56,7 +64,9 @@ public final class GeminiLiveTranscriber: Sendable {
     ) {
         var request = URLRequest(url: Self.endpoint)
         request.setValue(apiKey, forHTTPHeaderField: "x-goog-api-key")
-        request.timeoutInterval = 10
+        // Google sends nothing while the speaker is silent; the connection
+        // wait is limited in `finish()` instead.
+        request.timeoutInterval = 900
         session = URLSession(configuration: .ephemeral)
         task = session.webSocketTask(with: request)
         task.maximumMessageSize = 16 * 1024 * 1024
@@ -163,7 +173,7 @@ public final class GeminiLiveTranscriber: Sendable {
     /// 16 kHz, 16-bit little-endian mono PCM. Safe to call from the audio thread.
     public func feed(_ pcm: Data) {
         let closed = state.withLock { state -> Bool in
-            guard !state.closed else { return true }
+            guard !state.closed, state.failure == nil else { return true }
             let count = pcm.count / 2
             guard count > 0 else { return false }
             let rms: Float = pcm.withUnsafeBytes { raw in
@@ -190,6 +200,7 @@ public final class GeminiLiveTranscriber: Sendable {
             guard Self.events(in: try await receiveData()).contains(.setupComplete) else {
                 throw TranscriptionError.failed("no setupComplete")
             }
+            state.withLock { $0.ready = true }
             Task { await self.receiveLoop() }
             var pending = Data()
             for await chunk in audio {
@@ -202,7 +213,7 @@ public final class GeminiLiveTranscriber: Sendable {
             guard !isClosed else { return }
             if !pending.isEmpty { try await task.send(.string(Self.audioMessage(pending))) }
             try await task.send(.string(Self.endMessage))
-            state.withLock { $0.endSent = true }
+            state.withLock { $0.endSentAt = ContinuousClock.now }
         } catch {
             fail("send: \(describe(error))")
         }
@@ -211,9 +222,7 @@ public final class GeminiLiveTranscriber: Sendable {
     private func receiveLoop() async {
         do {
             while !isClosed {
-                for event in Self.events(in: try await receiveData()) {
-                    apply(event)
-                }
+                apply(Self.events(in: try await receiveData()))
             }
         } catch {
             fail("receive: \(describe(error))")
@@ -228,29 +237,32 @@ public final class GeminiLiveTranscriber: Sendable {
         }
     }
 
-    private func apply(_ event: Event) {
+    /// Applies one server message's events under one lock, so `finish()`
+    /// never sees half of a message.
+    private func apply(_ events: [Event]) {
         let preview: String? = state.withLock { state in
-            switch event {
-            case .setupComplete:
-                return nil
-            case .speechStarted:
-                state.serverSpeaking = true
-                return nil
-            case .speechEnded(let offset):
-                state.serverSpeaking = false
-                state.lastEndOffset = offset
-                return nil
-            case .interimText(let text):
-                state.preview = text
-                return Self.join(state.finals + [text])
-            case .finalText(let text):
-                state.finals.append(text)
-                state.preview = ""
-                return Self.join(state.finals)
-            case .error(let message):
-                if state.failure == nil, !state.closed { state.failure = message }
-                return nil
+            var preview: String?
+            for event in events {
+                switch event {
+                case .setupComplete:
+                    break
+                case .speechStarted:
+                    state.serverSpeaking = true
+                case .speechEnded(let offset):
+                    state.serverSpeaking = false
+                    state.lastEndOffset = offset
+                case .interimText(let text):
+                    state.preview = text
+                    preview = Self.join(state.finals + [text])
+                case .finalText(let text):
+                    state.finals.append(text)
+                    state.preview = ""
+                    preview = Self.join(state.finals)
+                case .error(let message):
+                    if state.failure == nil, !state.closed { state.failure = message }
+                }
             }
+            return preview
         }
         if let preview { previewHandler?(preview) }
     }
@@ -283,14 +295,23 @@ public final class GeminiLiveTranscriber: Sendable {
         while true {
             let snapshot = state.withLock { $0 }
             if let failure = snapshot.failure { throw TranscriptionError.failed(failure) }
-            let waited = clock.now - start
-            if snapshot.endSent, !snapshot.serverSpeaking {
-                let lastVoice = Double(snapshot.lastVoiceSample) / Self.sampleRate
-                if snapshot.lastEndOffset >= lastVoice - 0.3 || waited > Self.tailGrace {
-                    return Self.join(snapshot.finals)
+            let now = clock.now
+            if let endSentAt = snapshot.endSentAt {
+                // Count from when the end really went out: a slow upload may
+                // still have been sending queued audio when `finish()` began.
+                let sinceEnd = now - endSentAt
+                if !snapshot.serverSpeaking {
+                    let lastVoice = Double(snapshot.lastVoiceSample) / Self.sampleRate
+                    let caughtUp = snapshot.lastEndOffset >= lastVoice - 0.3 && snapshot.preview.isEmpty
+                    if caughtUp || sinceEnd > Self.tailGrace { return Self.join(snapshot.finals) }
+                } else if sinceEnd > Self.speakingGrace {
+                    throw TranscriptionError.failed("live transcription still hearing speech")
                 }
             }
-            if waited > timeout { throw TranscriptionError.failed("live transcription timed out") }
+            if !snapshot.ready, now - start > Self.connectTimeout {
+                throw TranscriptionError.failed("live transcription could not connect")
+            }
+            if now - start > timeout { throw TranscriptionError.failed("live transcription timed out") }
             try await Task.sleep(for: .milliseconds(50))
         }
     }

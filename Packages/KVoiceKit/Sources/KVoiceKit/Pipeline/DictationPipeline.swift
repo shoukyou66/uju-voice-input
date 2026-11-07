@@ -307,10 +307,11 @@ public final class DictationPipeline {
     }
 
     private func run(_ recording: Recording, mode: Mode, options: JobOptions) async throws -> DictationResult {
+        // Also when cancelled while queued: the connection must not stay open.
+        defer { options.live?.close() }
         try Task.checkCancellation()
         let settings = settings()
         guard !SpeechGate.isSilent(peakDBFS: recording.peakDBFS) else {
-            options.live?.close()
             discardAudio(recording.url)
             throw DictationError.noSpeech
         }
