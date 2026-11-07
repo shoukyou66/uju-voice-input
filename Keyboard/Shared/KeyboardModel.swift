@@ -31,6 +31,8 @@ final class KeyboardModel {
     private(set) var showsGlobeKey = false
     private(set) var canUndo = false
     private(set) var returnKeyType: UIReturnKeyType = .default
+    /// What live transcription has heard in the recording in progress.
+    private(set) var heardText = ""
 
     @ObservationIgnored private weak var host: (any KeyboardHost)?
     @ObservationIgnored private let mailbox: DictationHandoff
@@ -203,6 +205,11 @@ final class KeyboardModel {
         let result = mailbox.readResult()
         let pending = result.map { mailbox.readRequest()?.sessionID == $0.sessionID } ?? false
         send(.mailboxChanged(result: result, requestPending: pending, now: .now))
+        var heard = ""
+        if let result, result.status == .recording, case .recording(let session) = phase, session == result.sessionID {
+            heard = result.text ?? ""
+        }
+        if heardText != heard { heardText = heard }
     }
 
     private func send(_ event: KeyboardDictation.Event) {

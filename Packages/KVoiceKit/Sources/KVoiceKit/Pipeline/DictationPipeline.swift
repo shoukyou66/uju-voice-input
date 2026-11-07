@@ -87,9 +87,14 @@ public final class DictationPipeline {
     public private(set) var lastResult: DictationResult?
     /// The mode of the recording in progress.
     public private(set) var recordingMode: Mode?
+    /// What live transcription has heard so far in the recording in progress
+    /// (Traditional Chinese, Taiwan); empty without live transcription.
+    public private(set) var liveText = ""
 
     /// Called on every phase change (for example to update a keyboard handoff).
     @ObservationIgnored public var phaseHandler: ((DictationPhase) -> Void)?
+    /// Called when `liveText` changes (for example to show it in the keyboard).
+    @ObservationIgnored public var liveTextHandler: ((String) -> Void)?
     /// Processing runs one job at a time: the app's own recordings and
     /// Transcribe Audio jobs share this queue.
     @ObservationIgnored public let jobs = SerialJobQueue()
@@ -101,6 +106,7 @@ public final class DictationPipeline {
     @ObservationIgnored private let settings: @MainActor () -> Settings
     @ObservationIgnored private let recordingsDirectory: URL
     @ObservationIgnored private var processingTask: Task<DictationResult, any Error>?
+    @ObservationIgnored private var live: GeminiLiveTranscriber?
 
     /// - Parameters:
     ///   - history: Where results are saved; nil to keep no history.
@@ -141,37 +147,85 @@ public final class DictationPipeline {
     public func startRecording(mode: Mode) async throws {
         guard !isBusy else { throw DictationError.alreadyRecording }
         let url = recordingsDirectory.appending(path: "\(UUID().uuidString).wav")
+        let live = makeLiveTranscriber(for: mode)
+        if let live {
+            recorder.pcmHandler = { @Sendable pcm in live.feed(pcm) }
+        } else {
+            recorder.pcmHandler = nil
+        }
+        setLiveText("")
         do {
             try await recorder.start(writingTo: url)
+            self.live = live
             recordingMode = mode
             level = 0
             phase = .recording
         } catch {
+            live?.close()
+            recorder.pcmHandler = nil
             let failure = DictationError(error)
             phase = .failed(failure)
             throw failure
         }
+    }
+
+    /// Live transcription streams the recording to Gemini while it is made,
+    /// for a Google AI Studio smart transcription model (not translation).
+    /// The WAV file is still written; it is transcribed as before if live
+    /// transcription fails.
+    private func makeLiveTranscriber(for mode: Mode) -> GeminiLiveTranscriber? {
+        guard !mode.translateToEnglish else { return nil }
+        let settings = settings()
+        guard let engine = try? engines.engine(for: settings.engine(for: mode)) as? GeminiTranscriptionEngine,
+              engine.usesSmartTranscription else { return nil }
+        return GeminiLiveTranscriber(
+            apiKey: engine.apiKey,
+            languageCodes: GeminiTranscriptionEngine.smartLanguageCodes(for: mode.language),
+            vocabulary: settings.vocabulary ?? []
+        ) { [weak self] heard in
+            let text = ChineseConverter.shared.toTraditionalTaiwan(heard)
+            Task { @MainActor in
+                guard let self, self.phase == .recording else { return }
+                self.setLiveText(text)
+            }
+        }
+    }
+
+    private func setLiveText(_ text: String) {
+        guard liveText != text else { return }
+        liveText = text
+        liveTextHandler?(text)
+    }
+
+    private func takeLive() -> GeminiLiveTranscriber? {
+        let live = self.live
+        self.live = nil
+        recorder.pcmHandler = nil
+        return live
     }
 
     /// Stops recording and runs transcription, formatting and history.
     @discardableResult
     public func stopAndProcess() async throws -> DictationResult {
         guard recorder.isRecording, let mode = recordingMode else { throw DictationError.notRecording }
+        let live = takeLive()
         let recording: Recording
         do {
             recording = try await recorder.stop()
         } catch {
+            live?.close()
             let failure = DictationError(error)
             phase = .failed(failure)
             throw failure
         }
         level = 0
-        return try await process(recording, mode: mode)
+        return try await process(recording, mode: mode, live: live)
     }
 
     /// Discards the recording or stops processing.
     public func cancel() {
         if recorder.isRecording { recorder.cancel() }
+        takeLive()?.close()
         processingTask?.cancel()
         recordingMode = nil
         level = 0
@@ -181,10 +235,11 @@ public final class DictationPipeline {
     /// Transcribes and formats a recording (also used to re-run a history
     /// item's audio with another mode). Drives `phase`.
     @discardableResult
-    public func process(_ recording: Recording, mode: Mode) async throws -> DictationResult {
+    public func process(_ recording: Recording, mode: Mode, live: GeminiLiveTranscriber? = nil) async throws -> DictationResult {
         // Waiting behind another job: show it as transcribing.
         if jobs.isBusy { phase = .transcribing }
-        let options = JobOptions(updatesPhase: true)
+        var options = JobOptions(updatesPhase: true)
+        options.live = live
         let task = Task { try await self.jobs.run { try await self.run(recording, mode: mode, options: options) } }
         processingTask = task
         defer { processingTask = nil; recordingMode = nil }
@@ -210,6 +265,8 @@ public final class DictationPipeline {
         public var updatesPhase: Bool
         /// Called when the job reaches each stage.
         public var onStage: (@MainActor @Sendable (DictationActivity.Stage) -> Void)?
+        /// The live transcription of this recording, tried before the engine.
+        var live: GeminiLiveTranscriber?
 
         public init(
             engineOverride: TranscriptionEngineSelection? = nil,
@@ -253,6 +310,7 @@ public final class DictationPipeline {
         try Task.checkCancellation()
         let settings = settings()
         guard !SpeechGate.isSilent(peakDBFS: recording.peakDBFS) else {
+            options.live?.close()
             discardAudio(recording.url)
             throw DictationError.noSpeech
         }
@@ -260,18 +318,39 @@ public final class DictationPipeline {
         if options.updatesPhase, phase != .transcribing { phase = .transcribing }
         options.onStage?(.transcribing)
         let engineSelection = options.engineOverride ?? settings.engine(for: mode)
+        var engineName = engineSelection.displayName
+        var liveTranscription: TranscriptionResult?
+        if let live = options.live {
+            do {
+                let heard = try await live.finish().trimmingCharacters(in: .whitespacesAndNewlines)
+                if heard.isEmpty {
+                    DiagnosticsLog.shared.append(category: "live", "empty, using \(engineName)")
+                } else {
+                    liveTranscription = TranscriptionResult(text: ChineseConverter.shared.toTraditionalTaiwan(heard))
+                    engineName += "（即時）"
+                }
+            } catch is CancellationError {
+                throw DictationError.cancelled
+            } catch {
+                DiagnosticsLog.shared.append(category: "live", "failed, using \(engineName): \(error.localizedDescription)")
+            }
+        }
         let transcription: TranscriptionResult
-        do {
-            let engine = try engines.engine(for: engineSelection)
-            transcription = try await engine.transcribe(TranscriptionRequest(
-                audioURL: recording.url,
-                language: mode.language,
-                translateToEnglish: mode.translateToEnglish,
-                vocabulary: settings.vocabulary ?? []
-            ))
-        } catch {
-            if case .noSpeech = DictationError(error) { discardAudio(recording.url) }
-            throw DictationError(error)
+        if let liveTranscription {
+            transcription = liveTranscription
+        } else {
+            do {
+                let engine = try engines.engine(for: engineSelection)
+                transcription = try await engine.transcribe(TranscriptionRequest(
+                    audioURL: recording.url,
+                    language: mode.language,
+                    translateToEnglish: mode.translateToEnglish,
+                    vocabulary: settings.vocabulary ?? []
+                ))
+            } catch {
+                if case .noSpeech = DictationError(error) { discardAudio(recording.url) }
+                throw DictationError(error)
+            }
         }
         try Task.checkCancellation()
         let raw = transcription.text.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -315,7 +394,7 @@ public final class DictationPipeline {
             duration: recording.duration,
             modeID: mode.id,
             modeName: mode.name,
-            engine: engineSelection.displayName,
+            engine: engineName,
             provider: providerName,
             rawTranscript: raw,
             formattedText: formatted,

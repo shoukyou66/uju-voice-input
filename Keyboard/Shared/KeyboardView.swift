@@ -103,7 +103,12 @@ private struct KeyboardDictationPanel: View {
                 }
             }
             .padding(.horizontal, 12)
-            KeyboardStatusLine(phase: model.phase, external: model.dictation.external, modeName: model.activeMode?.name)
+            KeyboardStatusLine(
+                phase: model.phase,
+                external: model.dictation.external,
+                modeName: model.activeMode?.name,
+                heard: model.heardText
+            )
         }
     }
 
@@ -217,6 +222,8 @@ private struct KeyboardStatusLine: View {
     let phase: KeyboardDictation.Phase
     let external: KeyboardDictation.External
     let modeName: String?
+    /// Live transcription so far; replaces the recording hint when set.
+    var heard = ""
 
     var body: some View {
         Text(text)
@@ -250,13 +257,21 @@ private struct KeyboardStatusLine: View {
             if let modeName { "就緒 · \(modeName)" } else { "就緒" }
         case .waitingForApp(_, .openedApp, _): "開啟 KVoice 中…"
         case .waitingForApp(_, .command, _): "啟動中…"
-        case .recording: "錄音中…點一下結束"
+        case .recording: heard.isEmpty ? "錄音中…點一下結束" : Self.tail(of: heard)
         case .stopping, .transcribing: "轉錄中…"
         case .formatting: "整理中…"
         case .inserted: "已填入"
         case .failed(let message): message
         case .cancelled: "已取消"
         }
+    }
+}
+
+extension KeyboardStatusLine {
+    /// The end of what was heard, about two lines' worth.
+    static func tail(of text: String) -> String {
+        let flat = text.split(whereSeparator: \.isNewline).joined(separator: " ")
+        return flat.count > 40 ? "…" + flat.suffix(39) : flat
     }
 }
 

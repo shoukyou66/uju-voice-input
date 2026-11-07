@@ -75,6 +75,7 @@ enum Signal {
 final class StubRecorder: AudioRecording {
     var isRecording = false
     var levelHandler: ((Float) -> Void)?
+    var pcmHandler: (@Sendable (Data) -> Void)?
     var peakDBFS: Float = -10
     var samples: [Float] = Signal.tone(seconds: 2)
     private var url: URL?

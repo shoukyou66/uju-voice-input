@@ -42,6 +42,10 @@ public protocol AudioRecording: AnyObject {
     var levelHandler: ((Float) -> Void)? { get set }
     /// Seconds captured so far in the recording in progress (0 when idle).
     var recordedDuration: TimeInterval { get }
+    /// Receives the recording as 16 kHz, 16-bit little-endian mono PCM while
+    /// it is captured, on the audio thread (live transcription). Read at
+    /// `start`; nil to stream nothing.
+    var pcmHandler: (@Sendable (Data) -> Void)? { get set }
     func start(writingTo url: URL) async throws
     func stop() async throws -> Recording
     func cancel()
@@ -70,6 +74,7 @@ public final class AudioRecorder: AudioRecording {
     /// Called when the system stopped the engine (route or configuration
     /// change) while recording or in standby.
     public var engineStoppedHandler: (() -> Void)?
+    public var pcmHandler: (@Sendable (Data) -> Void)?
 
     private var engine: AVAudioEngine?
     private var engineFormat: AVAudioFormat?
@@ -123,7 +128,7 @@ public final class AudioRecorder: AudioRecording {
             )
             if !isEngineRunning { try startEngine() }
             guard let engineFormat else { throw RecordingError.noInputDevice }
-            let writer = try TapWriter(url: url, inputFormat: engineFormat) { [weak self] level in
+            let writer = try TapWriter(url: url, inputFormat: engineFormat, onPCM: pcmHandler) { [weak self] level in
                 Task { @MainActor in self?.levelHandler?(level) }
             }
             tapTarget.set(writer)
@@ -251,13 +256,20 @@ final class TapWriter: @unchecked Sendable {
     private let outputFormat = AudioFile.processingFormat
     private let state: Mutex<State>
     private let onLevel: @Sendable (Float) -> Void
+    private let onPCM: (@Sendable (Data) -> Void)?
 
-    init(url: URL, inputFormat: AVAudioFormat, onLevel: @escaping @Sendable (Float) -> Void) throws {
+    init(
+        url: URL,
+        inputFormat: AVAudioFormat,
+        onPCM: (@Sendable (Data) -> Void)? = nil,
+        onLevel: @escaping @Sendable (Float) -> Void
+    ) throws {
         guard let converter = AVAudioConverter(from: inputFormat, to: AudioFile.processingFormat) else {
             throw RecordingError.failed("unsupported input format")
         }
         self.converter = converter
         self.onLevel = onLevel
+        self.onPCM = onPCM
         let file = try AVAudioFile(
             forWriting: url, settings: AudioFile.wavSettings,
             commonFormat: .pcmFormatFloat32, interleaved: false
@@ -304,6 +316,20 @@ final class TapWriter: @unchecked Sendable {
             return true
         }
         if shouldReport { onLevel(Self.normalizedLevel(rms: rms)) }
+        if let onPCM { onPCM(Self.int16PCM(channel[0], count: count)) }
+    }
+
+    /// Float samples as 16-bit little-endian PCM.
+    static func int16PCM(_ samples: UnsafePointer<Float>, count: Int) -> Data {
+        var data = Data(count: count * 2)
+        data.withUnsafeMutableBytes { raw in
+            for index in 0..<count {
+                let sample = samples[index]
+                let clamped = sample.isFinite ? max(-1, min(1, sample)) : 0
+                raw.storeBytes(of: Int16(clamped * 32_767).littleEndian, toByteOffset: index * 2, as: Int16.self)
+            }
+        }
+        return data
     }
 
     /// Maps RMS to 0...1 on a -60…0 dBFS scale.

@@ -65,6 +65,7 @@ final class AppModel {
         )
         self.handoff = HandoffCoordinator(model: self)
         pipeline.phaseHandler = { [weak self] phase in self?.phaseChanged(phase) }
+        pipeline.liveTextHandler = { [weak self] text in self?.handoff.liveTextChanged(text) }
         recorder.engineStoppedHandler = { [weak self] in
             self?.handleAudioLoss(cause: "engine stopped")
         }

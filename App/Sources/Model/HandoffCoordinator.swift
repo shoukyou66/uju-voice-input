@@ -375,6 +375,13 @@ final class HandoffCoordinator {
         }
     }
 
+    /// Live transcription heard more: the keyboard shows it while recording
+    /// (a `recording` result with `text`).
+    func liveTextChanged(_ text: String) {
+        guard let sessionID, model.pipeline.phase == .recording else { return }
+        write(HandoffResult(sessionID: sessionID, status: .recording, text: text.isEmpty ? nil : text))
+    }
+
     /// Mirrors pipeline phases into the keyboard session's `HandoffResult`.
     private func writeKeyboardProgress(_ phase: DictationPhase, result: DictationResult?, session: UUID) {
         switch phase {

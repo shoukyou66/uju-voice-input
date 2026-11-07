@@ -67,7 +67,8 @@ public struct HandoffResult: Codable, Sendable, Hashable {
 
     public var sessionID: UUID
     public var status: Status
-    /// Final text when `status == .done`.
+    /// Final text when `status == .done`; while `recording`, what live
+    /// transcription has heard so far (shown, never typed).
     public var text: String?
     /// User-presentable message when `status == .failed`.
     public var errorMessage: String?
